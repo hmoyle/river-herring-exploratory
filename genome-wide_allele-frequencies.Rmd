@@ -1,0 +1,1106 @@
+---
+title: "Genome-wide Allele Frequencies"
+subtitle: "Alewife Populations of Interest Subset"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(viridis)
+library(ggtext)
+```
+To calculate the allele frequencies, I began with the bcf output from mega-post-bcf-exploratory-snakeflow so that the data has gone through all our normal filtering steps. The basic steps are to get the genotype likelihoods, convert the bcf to a vcf and subset by population, and then calculate the allele frequencies using angsd. 
+
+```{bash, eval = FALSE}
+mamba activate bcftools1.15 #load in bcftools environment
+bcftools +tag2tag main.bcf -- -r -PL-to-GL > genolikes.bcf # converts the FORMAT/PL source tag to FORMAT/GL, since angsd needs the tag
+bcftools view genolikes.bcf -S sample_subset.txt -O v -o subset_genolikes.vcf # given the list of samples, subsets and saves as a vcf
+angsd -vcf-gl subset_genolikes.vcf -fai genome.fasta.fai -nind 10 -domaf 3 -out angsd_outputs/subset # angsd calculates the minor allele frequencies based on an assumed known major and minor allele but takes the uncertainty of the minor allele into account (-domaf 3) and the number of individuals in changed based on how many you have (this can be grabbed with a quick wc -l)
+```
+
+Now we use the .mafs.gz outputs of angsd for our plots.
+What makes these version 2 is that the first time I calculated allele frequencies with the corrected metadata (and thus the larger Mid-Atlantic group), I did it from the mega-non-model-wgs-snakeflow bcf (which is filtered less).
+
+```{r read_and_filter_data, echo = FALSE}
+grtl_freqs <- read_tsv("data/allele_freqs/GRTL-v2.mafs", 
+                       show_col_types = FALSE) %>% #read in Great Lakes allele frequencies
+  filter(nInd >= 21) # filter so that at least 80% of individuals have reads at a site
+finl_freqs <- read_tsv("data/allele_freqs/FINL-v2.mafs", 
+                       show_col_types = FALSE) %>% # read in Finger Lakes allele frequencies
+  filter(nInd >= 13)
+natla_freqs <- read_tsv("data/allele_freqs/NATLA-v2.mafs", 
+                        show_col_types = FALSE) %>% # read in Northern Atlantic Anadromous allele frequencies
+  filter(nInd >= 6)
+mida_freqs <- read_tsv("data/allele_freqs/MIDA-v2.mafs", 
+                       show_col_types = FALSE) %>% # read in Mid-Atlantic Anadromous allele frequencies
+  filter(nInd >= 12)
+```
+
+In Eric's example, he filtered by 30 for 64 individuals, so you can play with how heavily you want to filter the data. For this, I prefer 70-85% and typically choose 80% and always round down. Having a higher number of individuals have information at that region makes me more sure of the results, but it might be reasonable to start at 50% or so just to check it out before stricter filtering. 
+
+Now, we do the comparisons:
+```{r comps}
+natla_mida <- inner_join(natla_freqs, 
+                         mida_freqs, 
+                         by = c("chromo", "position"), 
+                         suffix = c("_n", "_m")) %>% # joins together the northern and mid-atlantic allele frequencies by the chromosome and position, keeping the observations that match and keeps the calculated values separate
+  mutate(ave_freq = (unknownEM_n + unknownEM_m) / 2, # the average frequency from -domaf 3
+         abs_diff = abs(unknownEM_n - unknownEM_m)) # the absolute difference in those frequencies
+
+natla_grtl <- inner_join(natla_freqs, 
+                         grtl_freqs, 
+                         by = c("chromo", "position"), 
+                         suffix = c("_n", "_g")) %>%
+  mutate(ave_freq = (unknownEM_n + unknownEM_g) / 2, 
+         abs_diff = abs(unknownEM_n - unknownEM_g))
+
+mida_grtl <- inner_join(mida_freqs, 
+                        grtl_freqs, 
+                        by = c("chromo", "position"), 
+                        suffix = c("_m", "_g")) %>%
+  mutate(ave_freq = (unknownEM_m + unknownEM_g) / 2, 
+         abs_diff = abs(unknownEM_m - unknownEM_g))
+
+natla_finl <- inner_join(natla_freqs, 
+                         finl_freqs, 
+                         by = c("chromo", "position"), 
+                         suffix = c("_n", "_f")) %>%
+  mutate(ave_freq = (unknownEM_n + unknownEM_f) / 2,
+         abs_diff = abs(unknownEM_n - unknownEM_f))
+mida_finl <- inner_join(mida_freqs, 
+                         finl_freqs, 
+                         by = c("chromo", "position"), 
+                         suffix = c("_m", "_f")) %>%
+  mutate(ave_freq = (unknownEM_m + unknownEM_f) / 2,
+         abs_diff = abs(unknownEM_m - unknownEM_f))
+```
+
+
+Now I'm going to check the distribution of our data to make plotting it easier, and pick a cutoff that will retain most of the information. 
+```{r hexabins, eval = FALSE}
+nxm_check <- ggplot(data = natla_mida, 
+                    mapping = aes(x = ave_freq,
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+nxm_check
+
+nxg_check <- ggplot(data = natla_grtl, 
+                    mapping = aes(ave_freq, 
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+nxg_check
+
+mxg_check <- ggplot(mida_grtl, 
+                    mapping = aes(x = ave_freq,
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+mxg_check
+
+nxf_check <- ggplot(natla_finl, 
+                    mapping = aes(x = ave_freq, 
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+nxf_check
+
+mxf_check <- ggplot(mida_finl, 
+                    mapping = aes(x = ave_freq, 
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+mxf_check
+```
+I want to try to keep this in the same range as a 50,000 size sliding window, so I'm going to filter my data for an absolute difference greater than 0.15
+```{r more_filtering, echo = FALSE}
+natla_mida <- natla_mida %>%
+  filter(abs_diff > 0.15)
+natla_grtl <- natla_grtl %>%
+  filter(abs_diff > 0.15)
+mida_grtl <- mida_grtl %>%
+  filter(abs_diff > 0.15)
+natla_finl <- natla_finl %>%
+  filter(abs_diff > 0.15)
+mida_finl <- mida_finl %>%
+  filter(abs_diff > 0.15)
+```
+
+Then I set up the data for plotting by getting the center position of each chromosome, so that the labels are centered on each chromosome and not repeated. 
+```{r more_data_org, echo = FALSE}
+data_cum <- natla_mida %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+natla_mida <- natla_mida %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+nxm_axis_set <- natla_mida %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+
+data_cum <- natla_grtl %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+natla_grtl <- natla_grtl %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+nxg_axis_set <- natla_grtl %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+
+data_cum <- mida_grtl %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+mida_grtl <- mida_grtl %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+mxg_axis_set <- mida_grtl %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+
+data_cum <- natla_finl %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+natla_finl <- natla_finl %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+nxf_axis_set <- natla_finl %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+
+data_cum <- mida_finl %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+mida_finl <- mida_finl %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+mxf_axis_set <- mida_finl %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+```
+
+Finally, I plot the absolute differences of the allele frequencies across the entire genome, focusing on the sections that the pairwise fst analysis showed peaks in fst value.
+
+Starting with the Northern Atlantic versus the Mid-Atlantic Populations
+```{r northxmid_atl_plot, echo = FALSE}
+nxm_plot <- ggplot(data = natla_mida,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = nxm_axis_set$chromo,
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(nxm_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_plot
+
+### Chromosomes of Interest ###
+nxm_chr1_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 1") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr1_plot
+
+nxm_chr2_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 2") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr2_plot
+
+nxm_chr3_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 3") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr3_plot
+
+nxm_chr10_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 10") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr10_plot
+
+nxm_chr12_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 12") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+nxm_spike_plot <- natla_mida %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+```
+Northern Atlantic versus the Great Lakes Populations
+```{r northxgreat_plot, echo = FALSE}
+nxg_plot <- ggplot(data = natla_grtl,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = nxg_axis_set$chromo,
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(nxg_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "N. Atlantic Anadromous vs. Great Lakes Landlocked Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_plot
+
+### Chromosomes of Interest ###
+nxg_chr1_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 1") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr1_plot
+
+nxg_chr2_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 2") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr2_plot
+
+nxg_chr3_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 3") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr3_plot
+
+nxg_chr10_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 10") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr10_plot
+
+nxg_chr12_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 12") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+nxg_spike_plot <- natla_grtl %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+```
+Mid-Atlantic versus the Great Lakes Populations
+```{r midxgreat_plot, echo = FALSE}
+mxg_plot <- ggplot(data = mida_grtl,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = mxg_axis_set$chromo,
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(mxg_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_plot
+
+### Chromosomes of Interest ###
+mxg_chr1_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 1") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr1_plot
+
+mxg_chr2_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 2") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr2_plot
+
+mxg_chr3_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 3") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr3_plot
+
+mxg_chr10_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 10") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr10_plot
+
+mxg_chr12_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 12") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+mxg_spike_plot <- mida_grtl %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+```
+Northern Atlantic versus the Finger Lakes Populations
+```{r northxfinger_plot, echo = FALSE}
+nxf_plot <- ggplot(data = natla_finl,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = nxf_axis_set$chromo,
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(nxf_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_plot
+
+### Chromosomes of Interest ###
+nxf_chr1_plot <- ggplot(data = filter(natla_finl, chromo == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf_axis_set$chromo, 
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 1") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_chr1_plot
+
+nxf_chr2_plot <- ggplot(data = filter(natla_finl, chromo == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxf_axis_set$chromo, 
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 2") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_chr2_plot
+
+nxf_chr3_plot <- ggplot(data = filter(natla_finl, chromo == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf_axis_set$chromo, 
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 3") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_chr3_plot
+
+nxf_chr10_plot <- ggplot(data = filter(natla_finl, chromo == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf_axis_set$chromo, 
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 10") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_chr10_plot
+
+nxf_chr12_plot <- ggplot(data = filter(natla_finl, chromo == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf_axis_set$chromo, 
+                     breaks = nxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 12") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+nxf_spike_plot <- natla_finl %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+```
+
+Mid-Atlantic versus the Finger Lakes Populations
+```{r midxfinger_plot, echo = FALSE}
+mxf_plot <- ggplot(data = mida_finl,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = mxf_axis_set$chromo,
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(mxf_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_plot
+
+### Chromosomes of Interest ###
+mxf_chr1_plot <- ggplot(data = filter(mida_finl, chromo == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf_axis_set$chromo, 
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 1") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_chr1_plot
+
+mxf_chr2_plot <- ggplot(data = filter(mida_finl, chromo == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = mxf_axis_set$chromo, 
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 2") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_chr2_plot
+
+mxf_chr3_plot <- ggplot(data = filter(mida_finl, chromo == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf_axis_set$chromo, 
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 3") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_chr3_plot
+
+mxf_chr10_plot <- ggplot(data = filter(mida_finl, chromo == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf_axis_set$chromo, 
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 10") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_chr10_plot
+
+mxf_chr12_plot <- ggplot(data = filter(mida_finl, chromo == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf_axis_set$chromo, 
+                     breaks = mxf_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 12") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+mxf_spike_plot <- mida_finl %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+```
+
+There isn't anything popping up other than the big spike on chromosome 2, even though we see some spikes above 0.25 in Fst on some of the other chromosomes. Let's just compare the spike regions for chromosome 2.
+
+```{r spike_plots, echo = FALSE}
+nxm_spike_plot
+nxg_spike_plot
+mxg_spike_plot
+nxf_spike_plot
+mxf_spike_plot
+```
+Success! We're seeing the same spike in absolute difference of allele frequency in the Mid-Atlantic populations when compared the either Great Lakes or Finger Lakes that we see in the Northern Atlantic vs Mid-Atlantic comparison. Because the allele frequencies aren't very different between the Northern Atlantic and Great/Finger Lakes at that highly variable site, it looks like the alewife from Northern Atlantic populations (Miramichi and Saco River) may have been the source population for the Great Lakes and the Finger Lakes. 
+
+Testing out the differences between Great Lakes and Finger Lakes, which group pretty strongly together in PCA. 
+```{r fingerxgreat_test, echo = FALSE, eval = FALSE}
+finl_grtl <- inner_join(finl_freqs, 
+                         grtl_freqs, 
+                         by = c("chromo", "position"), 
+                         suffix = c("_f", "_g")) %>%
+  mutate(ave_freq = (unknownEM_f + unknownEM_g) / 2, 
+         abs_diff = abs(unknownEM_f - unknownEM_g))
+
+fxg_check <- ggplot(data = finl_grtl, 
+                    mapping = aes(ave_freq, 
+                                  y = abs_diff)) +
+  geom_hex(binwidth = 0.001) +
+  scale_fill_viridis_c()
+fxg_check
+
+finl_grtl <- finl_grtl %>%
+  filter(abs_diff > 0.15)
+
+data_cum <- finl_grtl %>%
+  group_by(chromo) %>%
+  summarise(max_pos = max(position)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chromo, pos_add)
+finl_grtl <- finl_grtl %>%
+  inner_join(data_cum, by = "chromo") %>%
+  mutate(pos_cum = position + pos_add)
+fxg_axis_set <- finl_grtl %>%
+  group_by(chromo) %>%
+  summarise(center = mean(pos_cum))
+
+fxg_plot <- ggplot(data = finl_grtl,
+                   mapping = aes(x = pos_cum,
+                                 y = abs_diff,
+                                 color = as_factor(chromo))) +
+  geom_point(alpha = 0.75, size = 1) +
+  scale_x_continuous(label = fxg_axis_set$chromo,
+                     breaks = fxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0.15, 1.05)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"),
+                                  unique(length(fxg_axis_set$chromo)))) +
+  labs(x = NULL,
+       y = "Absolute Difference in Allele Frequency",
+       title = "Finger Lakes vs Great Lakes Landlocked Alewife") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+fxg_plot
+
+### Chromosome 2 Spike Region ###
+
+fxg_spike_plot <- finl_grtl %>%
+  filter(chromo == "NC_055958.1") %>%
+  filter(position >= 16600000) %>%
+  filter(position <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Finger Lakes vs Great Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+fxg_spike_plot
+```
+
+```{r save_plots, echo = FALSE, eval = FALSE}
+ggsave("figures/allele-freqs/natla-x-finl-chrom2-spike-allele-freqs.png", 
+       plot = nxf_spike_plot, 
+       width = 10, 
+       height = 4)
+```
+

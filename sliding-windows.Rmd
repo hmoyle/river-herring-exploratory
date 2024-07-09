@@ -1,0 +1,1201 @@
+---
+title: "Sliding Windows Analysis"
+subtitle: "Alewife Populations of Interest Subset"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ggtext)
+```
+
+```{r data_org, echo = FALSE}
+cols <- c("region", 
+          "chr", 
+          "midPos", 
+          "Nsites", 
+          "Fst")
+
+
+### Mid-Atlantic Anadromous Alewife vs Finger Lakes Landlocked Alewife ###
+## Size 10,000 Step 2,000 ##
+mxf10 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--FINL--size-10000--step-2000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxf10_cum <- mxf10 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxf10 <- mxf10 %>%
+  inner_join(mxf10_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxf10_axis_set <- mxf10 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+## Size 50,000 Step 10,000 ##
+mxf50 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--FINL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxf50_cum <- mxf50 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxf50 <- mxf50 %>%
+  inner_join(mxf50_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxf50_axis_set <- mxf50 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+
+### Northern Atlantic Anadromous Alewife vs Finger Lakes Landlocked Alewife ###
+## Size 10,000 Step 2,000 ##
+nxf10 <- read_delim("data/summarized/sliding_window_fst/NATLA--x--FINL--size-10000--step-2000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+nxf10_cum <- nxf10 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+nxf10 <- nxf10 %>%
+  inner_join(nxf10_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+nxf10_axis_set <- nxf10 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+## Size 50,000 Step 10,000 ##
+nxf50 <- read_delim("data/summarized/sliding_window_fst/NATLA--x--FINL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+nxf50_cum <- nxf50 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+nxf50 <- nxf50 %>%
+  inner_join(nxf50_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+nxf50_axis_set <- nxf50 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+
+### Northern Atlantic Anadromous Alewife vs Great Lakes Landlocked Alewife ###
+## Size 10,000 Step 2,000 ##
+nxg10 <- read_delim("data/summarized/sliding_window_fst/NATLA--x--GRTL--size-10000--step-2000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+nxg10_cum <- nxg10 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+nxg10 <- nxg10 %>%
+  inner_join(nxg10_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+nxg10_axis_set <- nxg10 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+## Size 50,000 Step 10,000 ##
+nxg50 <- read_delim("data/summarized/sliding_window_fst/NATLA--x--GRTL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+nxg50_cum <- nxg50 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+nxg50 <- nxg50 %>%
+  inner_join(nxg50_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+nxg50_axis_set <- nxg50 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+
+### Mid-Atlantic Anadromous Alewife vs Great Lakes Landlocked Alewife ###
+## Size 10,000 Step 2,000 ##
+mxg10 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--GRTL--size-10000--step-2000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxg10_cum <- mxg10 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxg10 <- mxg10 %>%
+  inner_join(mxg10_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxg10_axis_set <- mxg10 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+## Size 50,000 Step 10,000 ##
+mxg50 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--GRTL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxg50_cum <- mxg50 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxg50 <- mxg50 %>%
+  inner_join(mxg50_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxg50_axis_set <- mxg50 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+
+### Mid-Atlantic Anadromous Alewife vs Northern Atlantic Anadromous Alewife ###
+## Size 10,000 Step 2,000 ##
+mxn10 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--NATLA--size-10000--step-2000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxn10_cum <- mxn10 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxn10 <- mxn10 %>%
+  inner_join(mxn10_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxn10_axis_set <- mxn10 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+## Size 50,000 Step 10,000 ##
+mxn50 <- read_delim("data/summarized/sliding_window_fst/MIDA--x--NATLA--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+mxn50_cum <- mxn50 %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+mxn50 <- mxn50 %>%
+  inner_join(mxn50_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+mxn50_axis_set <- mxn50 %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+```
+
+
+```{r MIDA_x_NATLA_plots}
+mxn10_plot <- ggplot(data = mxn10, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxn10_axis_set$chr, 
+                     breaks = mxn10_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxn10_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 10,000 Step 2,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn10_plot
+
+mxn50_plot <- ggplot(data = mxn50, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxn50_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_plot
+
+### Regions of Interest ###
+## Looking at Chromosomes with Fst of 0.25 or greater ##
+mxn50_chr1_plot <- ggplot(data = filter(mxn50, chr == "NC_055957.1"), 
+                          mapping = aes(x = pos_cum, 
+                                        y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_chr1_plot
+
+mxn50_chr2_plot <- ggplot(data = filter(mxn50, chr == "NC_055958.1"), 
+                          mapping = aes(x = pos_cum, 
+                                        y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_chr2_plot
+
+mxn50_chr3_plot <- ggplot(data = filter(mxn50, chr == "NC_055959.1"), 
+                          mapping = aes(x = pos_cum, 
+                                        y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_chr3_plot
+
+mxn50_chr10_plot <- ggplot(data = filter(mxn50, chr == "NC_055966.1"), 
+                           mapping = aes(x = pos_cum, 
+                                         y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_chr10_plot
+
+mxn50_chr12_plot <- ggplot(data = filter(mxn50, chr == "NC_055968.1"), 
+                           mapping = aes(x = pos_cum, 
+                                          y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxn50_axis_set$chr, 
+                     breaks = mxn50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+mxn50_spike_plot <- mxn50 %>%
+  filter(chr == "NC_055958.1") %>%
+  filter(midPos >= 16600000) %>%
+  filter(midPos <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = midPos, 
+                       y = Fst, 
+                       size = Nsites)) +
+  geom_point(alpha = 0.75, color = "#869ca8") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_size_continuous(range = c(0.5, 3)) +
+  labs(x = "Position", 
+       y = "Fst", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife Chromosome 2", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxn50_spike_plot
+```
+
+```{r MIDA_x_GRTL_plots}
+mxg10_plot <- ggplot(data = mxg10, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxg10_axis_set$chr, 
+                     breaks = mxg10_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxg10_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 10,000 Step 2,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg10_plot
+
+mxg50_plot <- ggplot(data = mxg50, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxg50_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_plot
+
+### Regions of Interest ###
+## Looking at the same chromosomes for MIDA vs NATLA ##
+mxg50_chr1_plot <- ggplot(data = filter(mxg50, chr == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_chr1_plot
+
+mxg50_chr2_plot <- ggplot(data = filter(mxg50, chr == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_chr2_plot
+
+mxg50_chr3_plot <- ggplot(data = filter(mxg50, chr == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_chr3_plot
+
+mxg50_chr10_plot <- ggplot(data = filter(mxg50, chr == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_chr10_plot
+
+mxg50_chr12_plot <- ggplot(data = filter(mxg50, chr == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg50_axis_set$chr, 
+                     breaks = mxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+mxg50_spike_plot <- mxg50 %>%
+  filter(chr == "NC_055958.1") %>%
+  filter(midPos >= 16600000) %>%
+  filter(midPos <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = midPos, 
+                       y = Fst, 
+                       size = Nsites)) +
+  geom_point(alpha = 0.75, color = "#869ca8") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_size_continuous(range = c(0.5, 3)) +
+  labs(x = "Position", 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg50_spike_plot
+```
+
+```{r NATLA_x_GRTL_plots}
+nxg10_plot <- ggplot(data = nxg10, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = nxg10_axis_set$chr, 
+                     breaks = nxg10_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(nxg10_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 10,000 Step 2,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg10_plot
+
+nxg50_plot <- ggplot(data = nxg50, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(nxg50_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_plot
+
+### Regions of Interest ###
+## Looking at the same chromosomes for MIDA vs NATLA ##
+nxg50_chr1_plot <- ggplot(data = filter(nxg50, chr == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_chr1_plot
+
+nxg50_chr2_plot <- ggplot(data = filter(nxg50, chr == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_chr2_plot
+
+nxg50_chr3_plot <- ggplot(data = filter(nxg50, chr == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_chr3_plot
+
+nxg50_chr10_plot <- ggplot(data = filter(nxg50, chr == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_chr10_plot
+
+nxg50_chr12_plot <- ggplot(data = filter(nxg50, chr == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg50_axis_set$chr, 
+                     breaks = nxg50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+nxg50_spike_plot <- nxg50 %>%
+  filter(chr == "NC_055958.1") %>%
+  filter(midPos >= 16600000) %>%
+  filter(midPos <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = midPos, 
+                       y = Fst, 
+                       size = Nsites)) +
+  geom_point(alpha = 0.75, color = "#869ca8") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_size_continuous(range = c(0.5, 3)) +
+  labs(x = "Position", 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg50_spike_plot
+```
+
+```{r MIDA_x_FINL_plots}
+mxf10_plot <- ggplot(data = mxf10, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxf10_axis_set$chr, 
+                     breaks = mxf10_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxf10_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 10,000 Step 2,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf10_plot
+
+mxf50_plot <- ggplot(data = mxf50, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(mxf50_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_plot
+
+### Regions of Interest ###
+## Looking at the same chromosomes for MIDA vs NATLA ##
+mxf50_chr1_plot <- ggplot(data = filter(mxf50, chr == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_chr1_plot
+
+mxf50_chr2_plot <- ggplot(data = filter(mxf50, chr == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_chr2_plot
+
+mxf50_chr3_plot <- ggplot(data = filter(mxf50, chr == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_chr3_plot
+
+mxf50_chr10_plot <- ggplot(data = filter(mxf50, chr == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_chr10_plot
+
+mxf50_chr12_plot <- ggplot(data = filter(mxf50, chr == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxf50_axis_set$chr, 
+                     breaks = mxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+mxf50_spike_plot <- mxf50 %>%
+  filter(chr == "NC_055958.1") %>%
+  filter(midPos >= 16600000) %>%
+  filter(midPos <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = midPos, 
+                       y = Fst, 
+                       size = Nsites)) +
+  geom_point(alpha = 0.75, color = "#869ca8") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_size_continuous(range = c(0.5, 3)) +
+  labs(x = "Position", 
+       y = "Fst", 
+       title = "Mid-Atlantic Anadromous vs Finger Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxf50_spike_plot
+```
+
+```{r NATLA_x_FINL_plots}
+nxf10_plot <- ggplot(data = nxf10, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = nxf10_axis_set$chr, 
+                     breaks = nxf10_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(nxf10_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 10,000 Step 2,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf10_plot
+
+nxf50_plot <- ggplot(data = nxf50, 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst, 
+                                   color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(nxf50_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_plot
+
+### Regions of Interest ###
+## Looking at the same chromosomes for MIDA vs NATLA ##
+nxf50_chr1_plot <- ggplot(data = filter(nxf50, chr == "NC_055957.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_chr1_plot
+
+nxf50_chr2_plot <- ggplot(data = filter(nxf50, chr == "NC_055958.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_chr2_plot
+
+nxf50_chr3_plot <- ggplot(data = filter(nxf50, chr == "NC_055959.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_chr3_plot
+
+nxf50_chr10_plot <- ggplot(data = filter(nxf50, chr == "NC_055966.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_chr10_plot
+
+nxf50_chr12_plot <- ggplot(data = filter(nxf50, chr == "NC_055968.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = Fst)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxf50_axis_set$chr, 
+                     breaks = nxf50_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_chr12_plot
+
+### Chromosome 2 Spike Region ###
+
+nxf50_spike_plot <- nxf50 %>%
+  filter(chr == "NC_055958.1") %>%
+  filter(midPos >= 16600000) %>%
+  filter(midPos <= 17000000) %>%
+  ggplot(.,
+         mapping = aes(x = midPos, 
+                       y = Fst, 
+                       size = Nsites)) +
+  geom_point(alpha = 0.75, color = "#869ca8") +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_size_continuous(range = c(0.5, 3)) +
+  labs(x = "Position", 
+       y = "Fst", 
+       title = "N. Atlantic Anadromous vs Finger Lakes Landlocked Alewife Chromosome 2", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxf50_spike_plot
+```
+
+
+```{r saving_plots}
+### Using ggsave to save the manhattan plots, or as I will now refer to it: ###
+# Saving Private Plots (Ryan lol) ##
+ggsave("figures/sliding-windows-fst/MIDA-x-NATLA-sz50-chrom2-spike.png", 
+       plot = mxn50_spike_plot, 
+       width = 10, 
+       height = 4)
+```
+
