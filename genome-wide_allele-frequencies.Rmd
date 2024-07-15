@@ -353,6 +353,8 @@ nxm_spike_plot <- natla_mida %>%
         axis.text.x = element_text(angle = 90,
                                   size = 8,
                                   vjust = 0.5))
+
+nxm_spike_plot
 ```
 Northern Atlantic versus the Great Lakes Populations
 ```{r northxgreat_plot, echo = FALSE}
@@ -515,6 +517,7 @@ nxg_spike_plot <- natla_grtl %>%
         axis.text.x = element_text(angle = 90,
                                   size = 8,
                                   vjust = 0.5))
+nxg_spike_plot
 ```
 Mid-Atlantic versus the Great Lakes Populations
 ```{r midxgreat_plot, echo = FALSE}
@@ -677,6 +680,8 @@ mxg_spike_plot <- mida_grtl %>%
         axis.text.x = element_text(angle = 90,
                                   size = 8,
                                   vjust = 0.5))
+
+mxg_spike_plot
 ```
 Northern Atlantic versus the Finger Lakes Populations
 ```{r northxfinger_plot, echo = FALSE}

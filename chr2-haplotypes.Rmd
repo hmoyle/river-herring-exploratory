@@ -1,0 +1,16 @@
+---
+title: "Haplotypes"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ecaRbioinf)
+```
+
+_References_
+Haplo-rater Plots: https://eriqande.github.io/thompson-et-al-2020-chinook-salmon-migration-timing/006-haplo-raster-plots.html
+Further Processing: https://eriqande.github.io/thompson-et-al-2020-chinook-salmon-migration-timing/004-prepare-haplotypes.html#further_processing
+BEAGLE paper: https://www.cell.com/AJHG/fulltext/S0002-9297(07)63882-8
+
+
