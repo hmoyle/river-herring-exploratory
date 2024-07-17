@@ -1,0 +1,224 @@
+---
+title: "Principal Components Analysis"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ggrepel)
+library(fs)
+library(RcppCNPy)
+```
+
+```{r data_org, echo = FALSE}
+metadata <- read_csv("data/herring_metadata.csv", 
+                     show_col_types = FALSE)
+### ALL SAMPLES ###
+C <- as.matrix(read.table("data/pcangsd_outputs/pcangsd_plain_out.cov"))
+NMFS_DNA_ID <- read_lines("data/sample_lists/samples.txt")
+e <- eigen(C)
+t <- tibble(PC1 = e$vectors[,1], 
+            PC2 = e$vectors[,2], 
+            PC3 = e$vectors[,3], 
+            PC4 = e$vectors[,4])
+temp <- add_column(t, NMFS_DNA_ID)
+all_data <- left_join(temp, 
+                      metadata, 
+                      by = c("NMFS_DNA_ID" = "NMFS_DNA_ID"))
+
+vars <- e$values/sum(e$values) * 100
+
+### ALL ANADROMOUS SAMPLES ###
+C <- as.matrix(read.table("data/pcangsd_outputs/anad-river-herring-subset.cov"))
+NMFS_DNA_ID <- read_lines("data/sample_lists/anad-samples.txt")
+e <- eigen(C)
+t <- tibble(PC1 = e$vectors[,1], 
+            PC2 = e$vectors[,2], 
+            PC3 = e$vectors[,3], 
+            PC4 = e$vectors[,4])
+temp <- add_column(t, NMFS_DNA_ID)
+all_anad_data <- left_join(temp, 
+                      metadata, 
+                      by = c("NMFS_DNA_ID" = "NMFS_DNA_ID"))
+
+vars <- e$values/sum(e$values) * 100
+
+### ANADROMOUS ALEWIFE SAMPLES ###
+C <- as.matrix(read.table("data/pcangsd_outputs/alewife-anad-subset.cov"))
+NMFS_DNA_ID <- read_lines("data/sample_lists/alewife-anad-subset-samples.txt")
+e <- eigen(C)
+t <- tibble(PC1 = e$vectors[,1], 
+            PC2 = e$vectors[,2], 
+            PC3 = e$vectors[,3], 
+            PC4 = e$vectors[,4])
+temp <- add_column(t, NMFS_DNA_ID)
+alewife_anad_data <- left_join(temp, 
+                      metadata, 
+                      by = c("NMFS_DNA_ID" = "NMFS_DNA_ID"))
+
+vars <- e$values/sum(e$values) * 100
+
+### ALL LANDLOCKED SAMPLES ###
+C <- as.matrix(read.table("data/pcangsd_outputs/landlocked-only-subset.cov"))
+NMFS_DNA_ID <- read_lines("data/sample_lists/landlocked-samples.txt")
+e <- eigen(C)
+t <- tibble(PC1 = e$vectors[,1], 
+            PC2 = e$vectors[,2], 
+            PC3 = e$vectors[,3], 
+            PC4 = e$vectors[,4])
+temp <- add_column(t, NMFS_DNA_ID)
+all_landlocked_data <- left_join(temp, 
+                                     metadata, 
+                                     by = c("NMFS_DNA_ID" = "NMFS_DNA_ID"))
+
+vars <- e$values/sum(e$values) * 100
+```
+
+```{r data_vis, echo = FALSE}
+wn_colors <- c(`Lake Hartwell` = "#0D39FF",
+               `Lake Yonah` = "#3D57CC", 
+               `Otisco Lake` = "#FF00AA",
+               `Seneca Lake` = "#CC3399", 
+               `East Grand Lake` = "#00FFE5",
+               `Pattagansett Lake` = "#5A3D7A", 
+               `Roanoke River` = "#549199", 
+               `Lake Ontario` = "#FF2600",
+               `Lake Superior` = "#CC4A33", 
+               `Cayuga Lake` = "#994D80",
+               `Canandaigua Lake` = "#664D5E",
+               `Lake Champlain` = "#59664D", 
+               `Lake Michigan` = "#99584D", 
+               `Quonnipaug Lake` = "#702FBA", 
+               `Rogers Lake` = "#7500FA", 
+               `Black Creek` = "#33CCBD", 
+               `Hudson River` = "#71994D", 
+               `Miramichi River` = "#4D9991", 
+               `Saco River` = "#7BFF00",
+               `Choptank River` = "#7DCC33", 
+               `Petitcodiac River` = "#4D6663", 
+               `Altamaha River` = "#525566")
+
+sp_shapes <- c(`aestivalis` = 22, 
+               `pseudoharengus` = 24, 
+               `hybrid` = 23)
+```
+
+```{r all_samples, echo = FALSE}
+all_plot <- ggplot(data = all_data,
+                   mapping = aes(x = PC1, 
+                                 y = PC2,
+                                 shape = SPECIES,
+                                 fill = WATER_NAME)) +
+  geom_point(size = 3) + 
+  geom_point(stroke = 0.05,
+             alpha = 0.75,
+             size = 3.5) +
+  scale_fill_manual(values = wn_colors) +
+  scale_shape_manual(values = sp_shapes) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, 
+                                                 stroke = 0.05, 
+                                                 size = 3)), 
+         shape = guide_legend(override.aes = list(stroke = 0.05, 
+                                                  size = 3))) +
+  labs(shape = "Species", 
+       fill = "Water Name", 
+       x = paste0("PC1 (",round(vars[1], 2),"%)"),
+       y = paste0("PC2 (",round(vars[2], 2),"%)")) +
+  geom_text_repel(mapping = aes(label = WATER_NAME), 
+                  max.overlaps = 25)
+all_plot
+```
+
+```{r all_anad, echo = FALSE}
+all_anad_plot <- ggplot(data = all_anad_data,
+                        mapping = aes(x = PC1, 
+                                      y = PC2,
+                                      shape = SPECIES,
+                                      fill = WATER_NAME)) +
+  geom_point(size = 3) + 
+  geom_point(stroke = 0.05,
+             alpha = 0.75,
+             size = 3.5) +
+  scale_fill_manual(values = wn_colors) +
+  scale_shape_manual(values = sp_shapes) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, 
+                                                 stroke = 0.05, 
+                                                 size = 3)), 
+         shape = guide_legend(override.aes = list(stroke = 0.05, 
+                                                  size = 3))) +
+  labs(shape = "Species", 
+       fill = "Water Name", 
+       x = paste0("PC1 (",round(vars[1], 2),"%)"),
+       y = paste0("PC2 (",round(vars[2], 2),"%)")) +
+  geom_text_repel(mapping = aes(label = WATER_NAME), 
+                  max.overlaps = 25)
+all_anad_plot
+```
+
+```{r anad_alewife, echo = FALSE}
+alewife_anad_plot <- ggplot(data = alewife_anad_data,
+                            mapping = aes(x = PC1, 
+                                          y = PC2,
+                                          shape = SPECIES,
+                                          fill = WATER_NAME)) +
+  geom_point(size = 3) + 
+  geom_point(stroke = 0.05,
+             alpha = 0.75,
+             size = 3.5) +
+  scale_fill_manual(values = wn_colors) +
+  scale_shape_manual(values = sp_shapes) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, 
+                                                 stroke = 0.05, 
+                                                 size = 3)), 
+         shape = guide_legend(override.aes = list(stroke = 0.05, 
+                                                  size = 3))) +
+  labs(shape = "Species", 
+       fill = "Water Name", 
+       x = paste0("PC1 (",round(vars[1], 2),"%)"),
+       y = paste0("PC2 (",round(vars[2], 2),"%)")) +
+  geom_text_repel(mapping = aes(label = WATER_NAME), 
+                  max.overlaps = 25)
+alewife_anad_plot
+```
+
+```{r all_landlocked, echo = FALSE}
+all_landlocked_plot <- ggplot(data = all_landlocked_data,
+                                  mapping = aes(x = PC1, 
+                                                y = PC2,
+                                                shape = SPECIES,
+                                                fill = WATER_NAME)) +
+  geom_point(size = 3) + 
+  geom_point(stroke = 0.05,
+             alpha = 0.75,
+             size = 3.5) +
+  scale_fill_manual(values = wn_colors) +
+  scale_shape_manual(values = sp_shapes) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  guides(fill = guide_legend(override.aes = list(shape = 22, 
+                                                 stroke = 0.05, 
+                                                 size = 3)), 
+         shape = guide_legend(override.aes = list(stroke = 0.05, 
+                                                  size = 3))) +
+  labs(shape = "Species", 
+       fill = "Water Name", 
+       x = paste0("PC1 (",round(vars[1], 2),"%)"),
+       y = paste0("PC2 (",round(vars[2], 2),"%)")) +
+  geom_text_repel(mapping = aes(label = WATER_NAME), 
+                  max.overlaps = 25)
+all_landlocked_plot
+```
+
+```{r saving_plots, echo = FALSE, eval = FALSE}
+ggsave("figures/pcangsd/alewife_anad_pca.png", 
+       plot = alewife_anad_plot, 
+       width = 10, 
+       height = 8)
+```
+
