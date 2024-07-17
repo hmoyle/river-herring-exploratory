@@ -124,7 +124,7 @@ mida_ones <- big_haps %>%
   rename(mida_allele = allele) %>%
   ungroup()
 
-big_haps2 <- big_haps %>%
+big_haps <- big_haps %>%
   left_join(mida_ones, by = "POS") %>%
   mutate(alle2 = ifelse(allele == mida_allele, "M", "N"))
 
@@ -208,6 +208,121 @@ exon_stuff <- snp_anno %>%
   group_by(CHROM, POS) %>%
   summarise(einc = exon_stuff_func(what))
   
+```
+
+
+```{sh, eval = FALSE}
+## checked my java version for at least v1.11, then downloaded snpEff from their website and moved it into my bin folder
+unzip snpEff_latest_core.zip # unzip the file
+rm snpEff_latest_core.zip # remove the extra zipped file
+cd ~/bin/snpEff/
+mkdir -p data/Asap_v1.0
+cd data/Asap_v1.0/
+ln -s ~/Desktop/river-herring-exploratory/data/phased/genome/GCF_018492685.1/genomic.gff genes.gff # softlink the gff
+ln -s ~/Desktop/river-herring-exploratory/data/phased/genome/GCF_018492685.1/GCF_018492685.1_fAloSap1.pri_genomic.fna sequences.fa # softlink the genome fasta
+mamba activate bcftools # activate bcftools so we can use htslib's bgzip
+bgzip genes.gff # zip that bad boy up
+cd ~/bin
+```
+
+
+```{sh, eval = FALSE}
+## add some lines to the config
+if grep -q Asap_v1.0 snpEff/snpEff.config; then
+    echo "Asap_v1.0 already added to config file"
+else
+    echo "Adding Asap_v1.0 to config file"
+    
+    echo "
+# American Shad genome, Asap_v1.0
+Asap_v1.0.genome : Alosa_sapidissima_Asap_V1.0
+" >> snpEff/snpEff.config
+fi
+```
+
+This didn't really work, so I'm going to move on and maybe address it later.
+
+```{r, echo = FALSE}
+## lets check the genotype of this region for the reference fish
+big_haps2 %>%
+  group_by(POS, REF, ALT, mida_allele) %>%
+  tally() %>%
+  select(-n) %>%
+  mutate(mida_is_ref = REF == mida_allele) %>%
+  group_by(mida_is_ref) %>%
+  tally()
+
+## order haplotypes by the number of mid-atlantic alleles
+chr2_spike_sorts <- big_haps2 %>%
+  group_by(haplo_name) %>%
+  mutate(sumM = sum(alle2 == "M")) %>%
+  ungroup() %>%
+  arrange(desc(sumM), haplo_name, POS)
+
+## define different orders for the haplotypes
+htmp <- chr2_spike_sorts %>%
+  mutate(hnames = haplo_name) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = c(
+                          "BLUE", 
+                          "HYBR", 
+                          "MIDA",
+                          "MIDL",
+                          "CONL",
+                          "NATLA", 
+                          "GRTL", 
+                          "FINL"
+                        ))) %>%
+  arrange(gfact, desc(sumM))
+
+ht2 <- htmp %>%
+  group_by(Indiv) %>%
+  mutate(sumM_indiv = sum(sumM)) %>%
+  ungroup() %>%
+  arrange(gfact, desc(sumM_indiv), Indiv, sumM)
+
+ht3 <- ht2 %>%
+  arrange(gfact, desc(WATER_NAME), desc(sumM), Indiv)
+
+h_ord_group_pop_middy <- unique(ht3$hnames)
+
+## prepare tibbles for the row and column annotations
+tmp <- c(1, 2)
+names(tmp) <- c("pop", "group")
+annotation_cols <- chr2_spike_sorts %>%
+  mutate(hnames = haplo_name) %>%
+  select(hnames, grouping_v3, WATER_NAME) %>%
+  count(hnames, grouping_v3, WATER_NAME) %>%
+  select(-n) %>%
+  gather(key = "column", value = "value", -hnames) %>%
+  mutate(
+    width = 0.0015, 
+    order = tmp[column]
+  )
+ancy_row <- big_haps2 %>%
+  count(POS, mida_allele) %>%
+  select(-n) %>%
+  left_join(haps$fix %>% select(POS, AA), by = "POS") %>%
+  mutate(
+    value = ifelse(mida_allele == AA, "ancestral", "derived"), 
+    row = "mid_anc_or_derived", 
+    order = 3, 
+    height = 0.02
+  )
+
+annotation_rows_full <- bind_rows(
+  exon_stuff %>%
+    ungroup() %>%
+    select(POS, einc) %>%
+    rename(value = einc) %>%
+    mutate(
+      row = "exon_stuff", 
+      order = 1, 
+      height = 0.02
+    ), 
+  ancy_row
+) %>%
+  mutate(POS = as.integer(POS))
 ```
 
 
