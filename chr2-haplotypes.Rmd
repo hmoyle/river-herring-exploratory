@@ -134,7 +134,11 @@ big_haps2 <- haps$fix %>%
   left_join(big_haps, 
             ., 
             by = "POS") %>%
-  select(ChromKey, POS, REF, ALT, everything())
+  select(ChromKey, POS, REF, ALT, everything()) %>%
+  filter(grouping_v3 == "MIDA"| 
+         grouping_v3 == "NATLA"| 
+         grouping_v3 == "GRTL"| 
+         grouping_v3 == "FINL")
 ```
 
 Now, I can plot. Kind of. 
@@ -242,6 +246,37 @@ fi
 
 This didn't really work, so I'm going to move on and maybe address it later.
 
+```{sh, eval = FALSE}
+## repeat content around each SNP
+mamba create -c conda-forge -c bioconda -n samtools samtools # create samtools environment
+conda activate samtools # activate it
+samtools faidx genome/GCF_018492685.1/GCF_018492685.1_fAloSap1.pri_genomic.fna NC_055958.1:16600000-17200000 > intermediates/chr2-spike-ish-seq-shad.fna # index the section of the shad reference genome we are using
+gzip -f intermediates/chr2-spike-ish-seq-shad.fna # zip up the baby
+```
+
+```{r, echo = FALSE}
+dna_tibble <- read_lines("data/phased/intermediates/chr2-spike-ish-seq-shad.fna.gz")[-1] %>%
+  paste(., 
+        collapse = "") %>%
+  strsplit(., 
+           "") %>%
+  .[[1]] %>%
+  tibble(
+    POS = seq(16600000, 
+              17200000, 
+              by = 1), 
+    dna = .
+  ) %>%
+  mutate(inRep = dna %in% c("a", "c", "g", "t"))
+
+dna_repetitive_200 <- dna_tibble %>%
+  mutate(rep_mean_200 = zoo::rollmean(inRep, 
+                                      200, 
+                                      fill = NA, 
+                                      na.rm = TRUE))
+```
+
+
 ```{r, echo = FALSE}
 ## lets check the genotype of this region for the reference fish
 big_haps2 %>%
@@ -263,17 +298,13 @@ chr2_spike_sorts <- big_haps2 %>%
 htmp <- chr2_spike_sorts %>%
   mutate(hnames = haplo_name) %>%
   mutate(gfact = factor(grouping_v3, 
-                        levels = c(
-                          "BLUE", 
-                          "HYBR", 
+                        levels = c( 
                           "MIDA",
-                          "MIDL",
-                          "CONL",
                           "NATLA", 
                           "GRTL", 
                           "FINL"
                         ))) %>%
-  arrange(gfact, desc(sumM))
+  arrange(gfact, desc(sumM)) 
 
 ht2 <- htmp %>%
   group_by(Indiv) %>%
@@ -282,14 +313,14 @@ ht2 <- htmp %>%
   arrange(gfact, desc(sumM_indiv), Indiv, sumM)
 
 ht3 <- ht2 %>%
-  arrange(gfact, desc(WATER_NAME), desc(sumM), Indiv)
+  arrange(gfact, desc(WATER_NAME), desc(sumM), Indiv) 
 
 h_ord_group_pop_middy <- unique(ht3$hnames)
 
 ## prepare tibbles for the row and column annotations
 tmp <- c(1, 2)
 names(tmp) <- c("pop", "group")
-annotation_cols <- chr2_spike_sorts %>%
+annotation_columns <- chr2_spike_sorts %>%
   mutate(hnames = haplo_name) %>%
   select(hnames, grouping_v3, WATER_NAME) %>%
   count(hnames, grouping_v3, WATER_NAME) %>%
@@ -325,4 +356,43 @@ annotation_rows_full <- bind_rows(
   mutate(POS = as.integer(POS))
 ```
 
+Now we plot.
+
+```{r haplo-raster, echo = FALSE}
+source("R/function_prep_elements.R")
+source("R/define_fcolors_all_mn.R")
+source("R/function_extra_labels.R")
+
+plist <- prep_elements(1.66e7, 
+                       1.72e7, 
+                       0.05e7, 
+                       format = "%.2f", 
+                       DSET = big_haps2_subset)
+plot <- haplo_raster_plot(D = plist$D,
+                          h_ord = h_ord_group_pop_middy, 
+                          pos_annot = plist$pos_annot, 
+                          pos_bar_text_size = 8.0, 
+                          annotation_columns = annotation_columns, 
+                          annotation_rows = plist$ann_rows, 
+                          fcolors = fcolors_all_sf, 
+                          anno_row_start = 10, 
+                          snp_quant_tibble = plist$repcontent, 
+                          no_legend = TRUE, 
+                          no_x_labels = TRUE)
+plot
+
+plot2 <- extra_labels(g = plot, 
+                      D = plist$D, 
+                      h_ord = h_ord_group_pop_middy, 
+                      xmids = plist$ac_x_midpoints, 
+                      ymids = plist$ar_y_midpoints, 
+                      row_just = 0.5) +
+  expand_limits(x = -130, y = 120)
+
+ggsave(plot, 
+       filename = "figures/haplotypes/haplo-raster-alleles-no-labs.png", 
+       width = 49, 
+       height = 30)
+
+```
 
