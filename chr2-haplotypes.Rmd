@@ -313,7 +313,20 @@ ht2 <- htmp %>%
   arrange(gfact, desc(sumM_indiv), Indiv, sumM)
 
 ht3 <- ht2 %>%
-  arrange(gfact, desc(WATER_NAME), desc(sumM), Indiv) 
+  mutate(pfact = factor(WATER_NAME, 
+                        levels = c("Choptank River", 
+                                   "Hudson River", 
+                                   "Black Creek", 
+                                   "Saco River", 
+                                   "Miramichi River", 
+                                   "Lake Ontario", 
+                                   "Lake Michigan", 
+                                   "Lake Superior", 
+                                   "Canandaigua Lake", 
+                                   "Cayuga Lake", 
+                                   "Seneca Lake", 
+                                   "Otisco Lake"))) %>%
+  arrange(gfact, pfact, desc(sumM), Indiv) 
 
 h_ord_group_pop_middy <- unique(ht3$hnames)
 
@@ -368,26 +381,60 @@ plist <- prep_elements(1.66e7,
                        0.05e7, 
                        format = "%.2f", 
                        DSET = big_haps2_subset)
+
+
+
+tmp <- plist$D %>%
+    select(haplo_name, grouping_v3, WATER_NAME) %>%
+    mutate(hnfact = factor(haplo_name, levels = rev(h_ord_group_pop_middy))) %>%
+    arrange(hnfact) %>%
+    group_by(hnfact) %>%
+    slice(1) %>%
+    ungroup() %>%
+    mutate(ypos = 1:n())
+
+group_pos <- tmp %>%
+    group_by(grouping_v3) %>%
+    summarise(midy = (min(ypos) - 0.5 + max(ypos) + 0.5) / 2) %>%
+    mutate(midx = -25)
+
+labels <- read_csv("data/ac_labels.csv")
+
+group_labels <- group_pos %>%
+    left_join(labels %>% group_by(grouping_v3) %>% slice(1))
+
 plot <- haplo_raster_plot(D = plist$D,
                           h_ord = h_ord_group_pop_middy, 
                           pos_annot = plist$pos_annot, 
-                          pos_bar_text_size = 8.0, 
+                          pos_bar_text_size = 10.0, 
                           annotation_columns = annotation_columns, 
                           annotation_rows = plist$ann_rows, 
                           fcolors = fcolors_all_sf, 
                           anno_row_start = 10, 
                           snp_quant_tibble = plist$repcontent, 
                           no_legend = TRUE, 
-                          no_x_labels = TRUE)
+                          no_x_labels = TRUE) +
+  expand_limits(x = -50, y = 150) +
+  geom_text(data = group_labels,
+            mapping = aes(x = midx, y = midy, label = group_label),
+            angle = 90,
+            colour = "black",
+            size = 10.0)
 plot
+
+xmids <- data.frame(columns = c("WATER_NAME", 
+                                "grouping_v3"), 
+                    midx = c(-20, -50))
 
 plot2 <- extra_labels(g = plot, 
                       D = plist$D, 
                       h_ord = h_ord_group_pop_middy, 
-                      xmids = plist$ac_x_midpoints, 
+                      xmids = xmids, 
                       ymids = plist$ar_y_midpoints, 
-                      row_just = 0.5) +
-  expand_limits(x = -130, y = 120)
+                      row_just = 0.5, 
+                      pop_size = 8.0, 
+                      group_size = 10.0) +
+  expand_limits(x = -100, y = 150)
 
 ggsave(plot, 
        filename = "figures/haplotypes/haplo-raster-alleles-no-labs.png", 
@@ -395,4 +442,5 @@ ggsave(plot,
        height = 30)
 
 ```
+
 
