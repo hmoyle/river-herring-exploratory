@@ -329,6 +329,28 @@ nxm_chr12_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055968.1"),
                                   vjust = 0.5))
 nxm_chr12_plot
 
+nxm_chr19_plot <- ggplot(data = filter(natla_mida, chromo == "NC_055975.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#869ca8") +
+  scale_x_continuous(label = nxm_axis_set$chromo, 
+                     breaks = nxm_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic vs. Mid-Atlantic Anadromous Alewife", 
+       subtitle = "Chromosome 19") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxm_chr19_plot
+
 ### Chromosome 2 Spike Region ###
 
 nxm_spike_plot <- natla_mida %>%
@@ -355,6 +377,58 @@ nxm_spike_plot <- natla_mida %>%
                                   vjust = 0.5))
 
 nxm_spike_plot
+
+## Chromosome 3 spike ##
+nxm_chr3_spike_plot <- natla_mida %>%
+  filter(chromo == "NC_055959.1") %>%
+  filter(position >= 24600000) %>%
+  filter(position <= 24800000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife Chromosome 3", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+nxm_chr3_spike_plot
+
+## Chromosome 19 spike ##
+nxm_chr19_spike_plot <- natla_mida %>%
+  filter(chromo == "NC_055975.1") %>%
+  filter(position >= 2250000) %>%
+  filter(position <= 8420000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic vs N. Atlantic Anadromous Alewife Chromosome 19", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+nxm_chr19_spike_plot
 ```
 Northern Atlantic versus the Great Lakes Populations
 ```{r northxgreat_plot, echo = FALSE}
@@ -493,6 +567,28 @@ nxg_chr12_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055968.1"),
                                   vjust = 0.5))
 nxg_chr12_plot
 
+nxg_chr19_plot <- ggplot(data = filter(natla_grtl, chromo == "NC_055975.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = nxg_axis_set$chromo, 
+                     breaks = nxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 19") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+nxg_chr19_plot
+
 ### Chromosome 2 Spike Region ###
 
 nxg_spike_plot <- natla_grtl %>%
@@ -518,6 +614,58 @@ nxg_spike_plot <- natla_grtl %>%
                                   size = 8,
                                   vjust = 0.5))
 nxg_spike_plot
+
+## Chromosome 3 spike ##
+nxg_chr3_spike_plot <- natla_grtl %>%
+  filter(chromo == "NC_055959.1") %>%
+  filter(position >= 24600000) %>%
+  filter(position <= 24800000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 3", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+nxg_chr3_spike_plot
+
+## Chromosome 19 spike ##
+nxg_chr19_spike_plot <- natla_grtl %>%
+  filter(chromo == "NC_055975.1") %>%
+  filter(position >= 2250000) %>%
+  filter(position <= 8420000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "N. Atlantic Anadromous vs Great Lakes Landlocked Alewife Chromosome 19", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+nxg_chr19_spike_plot
 ```
 Mid-Atlantic versus the Great Lakes Populations
 ```{r midxgreat_plot, echo = FALSE}
@@ -656,6 +804,28 @@ mxg_chr12_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055968.1"),
                                   vjust = 0.5))
 mxg_chr12_plot
 
+mxg_chr19_plot <- ggplot(data = filter(mida_grtl, chromo == "NC_055975.1"), 
+                     mapping = aes(x = pos_cum, 
+                                   y = abs_diff)) +
+  geom_point(alpha = 0.75, size = 0.5, color = "#242b35") +
+  scale_x_continuous(label = mxg_axis_set$chromo, 
+                     breaks = mxg_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = NULL, 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Alewife", 
+       subtitle = "Chromosome 19") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+mxg_chr19_plot
+
 ### Chromosome 2 Spike Region ###
 
 mxg_spike_plot <- mida_grtl %>%
@@ -682,6 +852,58 @@ mxg_spike_plot <- mida_grtl %>%
                                   vjust = 0.5))
 
 mxg_spike_plot
+
+## Chromosome 3 spike ##
+mxg_chr3_spike_plot <- mida_grtl %>%
+  filter(chromo == "NC_055959.1") %>%
+  filter(position >= 24600000) %>%
+  filter(position <= 24800000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Chromosome 3", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+mxg_chr3_spike_plot
+
+## Chromosome 19 spike ##
+mxg_chr19_spike_plot <- mida_grtl %>%
+  filter(chromo == "NC_055975.1") %>%
+  filter(position >= 2250000) %>%
+  filter(position <= 8420000) %>%
+  ggplot(.,
+         mapping = aes(x = position, 
+                       y = abs_diff)) +
+  geom_point(alpha = 0.75, color = "#869ca8", size = 2) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(0.15, 1.05)) +
+  labs(x = "Position", 
+       y = "Absolute Difference in Allele Frequency", 
+       title = "Mid-Atlantic Anadromous vs Great Lakes Landlocked Chromosome 19", 
+       subtitle = "16600000..17000000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+
+mxg_chr19_spike_plot
 ```
 Northern Atlantic versus the Finger Lakes Populations
 ```{r northxfinger_plot, echo = FALSE}
@@ -1103,8 +1325,8 @@ fxg_spike_plot
 ```
 
 ```{r save_plots, echo = FALSE, eval = FALSE}
-ggsave("figures/allele-freqs/natla-x-finl-chrom2-spike-allele-freqs.png", 
-       plot = nxf_spike_plot, 
+ggsave("figures/allele-freqs/natla-x-mida-chrom3-allele-freqs.png", 
+       plot = nxm_chr3_plot, 
        width = 10, 
        height = 4)
 ```

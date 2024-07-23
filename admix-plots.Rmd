@@ -1,0 +1,117 @@
+---
+title: "Admixture Proportions"
+subtitle: "All Samples"
+author: "Hana K. Moyle"
+date: "2024 July 23"
+output: html_notebook
+---
+
+```{r libraries}
+library(tidyverse)
+```
+
+```{r log_likelihoods}
+ngsadmix_dir <- "data/ngsadmix_all/maf_0.05" # set NGSadmix outputs directory
+N_K <- 10    # set number of K run
+N_reps <- 4  # set number of reps run
+
+# pull all log files
+log_files <- list.files(ngsadmix_dir, pattern = ".log", full.names = T, recursive=T)
+
+# read in all logs
+all_logs <- lapply(1:length(log_files), FUN = function(i) readLines(log_files[i]))
+
+# make list of the line that starts with "best like=" from all logs, just target 'b'
+library(stringr)
+bestlikes_str_list <- sapply(1:length(log_files), FUN= function(x) all_logs[[x]][which(str_sub(all_logs[[x]], 1, 1) == 'b')])
+
+# make dataframe with 1:N_K and N_reps to add likelihood values
+loglikes <- data.frame(K = rep(2:N_K, each=N_reps))
+
+# add the log likelihood (first number in the string)
+loglikes$loglike<-as.vector(as.numeric( sub("\\D*(\\d+).*", "\\1", bestlikes_str_list) ))
+
+tapply(loglikes$loglike, loglikes$K, FUN= function(x) mean(abs(x))/sd(abs(x)))
+```
+
+```{r data_org}
+alewife_palette <- c("#636c62", "#869ca8", "#a2878a", "#b6bc9f", "#ecc2a3", "#eceeed", "#242b35", "#a39faa", "#ac9b7c")
+
+metadata <- read_csv("data/herring_metadata.csv") %>%
+  select(NMFS_DNA_ID, 
+         GENUS, 
+         SPECIES, 
+         STATE_F, 
+         WATERSHED, 
+         WATER_NAME, 
+         grouping_v3)
+gord <- c("BLUE", 
+           "HYBR", 
+           "GRTL", 
+           "FINL", 
+           "MIDL", 
+           "CONL", 
+           "NATLA", 
+           "MIDA")
+word <- c("Petitcodiac River", 
+           "Hudson River", 
+           "Lake Yonah", 
+           "Lake Hartwell", 
+           "Altamaha River", 
+           "Roanoke River", 
+           "Lake Superior", 
+           "Lake Michigan", 
+           "Lake Ontario", 
+           "Canandaigua Lake", 
+           "Cayuga Lake", 
+           "Seneca Lake", 
+           "Otisco Lake", 
+           "East Grand Lake", 
+           "Lake Champlain", 
+           "Pattagansett Lake", 
+           "Rogers Lake", 
+           "Quonnipaug Lake", 
+           "Miramichi River", 
+           "Saco River", 
+           "Black Creek", 
+           "Choptank River")
+```
+
+```{r K2}
+K_2_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_2_rep_1[2:3]), 
+        col = alewife_palette, 
+        names = K_2_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r}
+source("test.R")
+K2_rep2 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_2/output.qopt_with_sample_names", 
+                      header = TRUE)
+plotAdmix(qdata = K2_rep2, 
+          metadata = metadata, 
+          pop = WATER_NAME, 
+          group = grouping_v3, 
+          pord = word, 
+          gord = gord, 
+          colorpalette = alewife_palette)
+```
+
