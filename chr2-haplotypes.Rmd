@@ -297,12 +297,12 @@ htmp <- chr2_spike_sorts %>%
                         levels = c( 
                           "BLUE", 
                           "HYBR", 
-                          "MIDA",
-                          "NATLA", 
                           "GRTL", 
                           "FINL", 
                           "CONL", 
-                          "MIDL"
+                          "MIDL",
+                          "MIDA",
+                          "NATLA"
                         ))) %>%
   arrange(gfact, desc(sumM)) 
 
