@@ -134,11 +134,7 @@ big_haps2 <- haps$fix %>%
   left_join(big_haps, 
             ., 
             by = "POS") %>%
-  select(ChromKey, POS, REF, ALT, everything()) %>%
-  filter(grouping_v3 == "MIDA"| 
-         grouping_v3 == "NATLA"| 
-         grouping_v3 == "GRTL"| 
-         grouping_v3 == "FINL")
+  select(ChromKey, POS, REF, ALT, everything())
 ```
 
 Now, I can plot. Kind of. 
@@ -299,10 +295,14 @@ htmp <- chr2_spike_sorts %>%
   mutate(hnames = haplo_name) %>%
   mutate(gfact = factor(grouping_v3, 
                         levels = c( 
+                          "BLUE", 
+                          "HYBR", 
                           "MIDA",
                           "NATLA", 
                           "GRTL", 
-                          "FINL"
+                          "FINL", 
+                          "CONL", 
+                          "MIDL"
                         ))) %>%
   arrange(gfact, desc(sumM)) 
 
@@ -314,7 +314,12 @@ ht2 <- htmp %>%
 
 ht3 <- ht2 %>%
   mutate(pfact = factor(WATER_NAME, 
-                        levels = c("Choptank River", 
+                        levels = c("Altamaha River", 
+                                   "Lake Hartwell", 
+                                   "Lake Yonah", 
+                                   "Petitcodiac River", 
+                                   "Roanoke River",
+                                   "Choptank River", 
                                    "Hudson River", 
                                    "Black Creek", 
                                    "Saco River", 
@@ -325,7 +330,12 @@ ht3 <- ht2 %>%
                                    "Canandaigua Lake", 
                                    "Cayuga Lake", 
                                    "Seneca Lake", 
-                                   "Otisco Lake"))) %>%
+                                   "Otisco Lake", 
+                                   "Pattagansett Lake", 
+                                   "Rogers Lake", 
+                                   "Quonnipaug Lake", 
+                                   "Lake Champlain", 
+                                   "East Grand Lake"))) %>%
   arrange(gfact, pfact, desc(sumM), Indiv) 
 
 h_ord_group_pop_middy <- unique(ht3$hnames)
@@ -380,7 +390,7 @@ plist <- prep_elements(1.66e7,
                        1.72e7, 
                        0.05e7, 
                        format = "%.2f", 
-                       DSET = big_haps2_subset)
+                       DSET = big_haps2)
 
 
 
@@ -406,7 +416,7 @@ group_labels <- group_pos %>%
 plot <- haplo_raster_plot(D = plist$D,
                           h_ord = h_ord_group_pop_middy, 
                           pos_annot = plist$pos_annot, 
-                          pos_bar_text_size = 10.0, 
+                          pos_bar_text_size = 8.0, 
                           annotation_columns = annotation_columns, 
                           annotation_rows = plist$ann_rows, 
                           fcolors = fcolors_all_sf, 
@@ -414,30 +424,19 @@ plot <- haplo_raster_plot(D = plist$D,
                           snp_quant_tibble = plist$repcontent, 
                           no_legend = TRUE, 
                           no_x_labels = TRUE) +
-  expand_limits(x = -50, y = 150) +
+  expand_limits(x = -50, y = 215) +
   geom_text(data = group_labels,
             mapping = aes(x = midx, y = midy, label = group_label),
             angle = 90,
             colour = "black",
-            size = 10.0)
+            size = 8.0)
 plot
 
-xmids <- data.frame(columns = c("WATER_NAME", 
-                                "grouping_v3"), 
-                    midx = c(-20, -50))
+```
 
-plot2 <- extra_labels(g = plot, 
-                      D = plist$D, 
-                      h_ord = h_ord_group_pop_middy, 
-                      xmids = xmids, 
-                      ymids = plist$ar_y_midpoints, 
-                      row_just = 0.5, 
-                      pop_size = 8.0, 
-                      group_size = 10.0) +
-  expand_limits(x = -100, y = 150)
-
+```{r, eval = FALSE}
 ggsave(plot, 
-       filename = "figures/haplotypes/haplo-raster-alleles-no-labs.png", 
+       filename = "figures/haplotypes/chr2_peak/haplo-raster-alleles-no-labs-all-samps.png", 
        width = 49, 
        height = 30)
 

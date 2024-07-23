@@ -1,13 +1,9 @@
-grouping_v3,WATER_NAME,group_label,pop_label
-MIDA,Hudson River,Mid-Atlantic,Hudson R.
-MIDA,Black Creek,Mid-Atlantic,Black C.
-MIDA,Choptank River,Mid-Atlantic,Choptank R.
-NATLA,Miramichi River,Northern Atlantic,Miramichi R.
-NATLA,Saco River,Northern Atlanic,Saco R.
-GRTL,Lake Ontario,Great Lakes,L. Ontario
-GRTL,Lake Michigan,Great Lakes,L. Michigan
-GRTL,Lake Superior,Great Lakes,L. Superior
-FINL,Cayuga Lake,Finger Lakes,Cayuga L.
-FINL,Canandaigua Lake,Finger Lakes,Canandaigua L.
-FINL,Seneca Lake,Finger Lakes,Seneca L.
-FINL,Otisco Lake,Finger Lakes,Otisco L.
+grouping_v3,group_label
+MIDA,Mid-Altantic
+NATLA,N. Atlantic
+GRTL,Great Lakes
+FINL,Finger Lakes
+BLUE,Blueback
+HYBR,Hybrid
+MIDL,Stranglings
+CONL,Connecticut Lakes
