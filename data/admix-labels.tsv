@@ -1,0 +1,24 @@
+grouping_v3	group_label	WATER_NAME	pop_label
+BLUE	Blueback	Lake Hartwell	L. Hartwell
+BLUE	Blueback	Lake Yonah	L. Yonah
+BLUE	Blueback	Petitcodiac River	Petitcodiac R.
+BLUE	Blueback	Altamaha River	Altamaha R.
+BLUE	Blueback	Hudson River	Hudson R.
+HYBR	Hybrid	Roanoke River	Roanoke R.
+GRTL	Great Lakes	Lake Superior	L. Superior
+GRTL	Great Lakes	Lake Michigan	L. Michigan
+GRTL	Great Lakes	Lake Ontario	L. Ontario
+FINL	Finger Lakes	Canandaigua Lake	Canandaigua L.
+FINL	Finger Lakes	Cayuga Lake	Cayuga L.
+FINL	Finger Lakes	Otisco Lake	Otisco L.
+FINL	Finger Lakes	Seneca Lake	Seneca L.
+CONL	Connecticut Lakes	Rogers Lake	Rogers L.
+CONL	Connecticut Lakes	Pattagansett Lake	Pattagansett L.
+CONL	Connecticut Lakes	Quonnipaug Lake	Quonnipaug L.
+MIDL	Stranglings	East Grand Lake	East Grand L.
+MIDL	Stranglings	Lake Champlain	L. Champlain
+NATLA	N. Atlantic	Miramichi River	Miramichi R.
+NATLA	N. Atlantic	Saco River	Saco R.
+MIDA	Mid-Atlantic	Hudson River	Hudson R.
+MIDA	Mid-Atlantic	Black Creek	Black C.
+MIDA	Mid-Atlantic	Choptank River	Choptank R.

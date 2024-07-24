@@ -8,6 +8,7 @@ output: html_notebook
 
 ```{r libraries}
 library(tidyverse)
+library(fs)
 ```
 
 ```{r log_likelihoods}
@@ -35,7 +36,7 @@ tapply(loglikes$loglike, loglikes$K, FUN= function(x) mean(abs(x))/sd(abs(x)))
 ```
 
 ```{r data_org}
-alewife_palette <- c("#636c62", "#869ca8", "#a2878a", "#b6bc9f", "#ecc2a3", "#eceeed", "#242b35", "#a39faa", "#ac9b7c")
+alewife_palette <- c("#636c62", "#869ca8", "#a2878a", "#b6bc9f", "#ecc2a3", "#eceeed", "#242b35", "#a39faa", "#ac9b7c", "#3b3a35")
 
 metadata <- read_csv("data/herring_metadata.csv") %>%
   select(NMFS_DNA_ID, 
@@ -75,10 +76,59 @@ word <- c("Petitcodiac River",
            "Saco River", 
            "Black Creek", 
            "Choptank River")
+
+labels <- read_tsv("data/admix-labels.tsv") 
+
+tmp <- metadata %>%
+  mutate(xpos = 1:n())
+
+group_pos <- tmp %>%
+  group_by(grouping_v3) %>%
+  summarise(midx = (min(xpos) - 0.5 + max(xpos) + 0.5)/ 2) %>%
+  mutate(midy = 1)
+
+group_labels <- group_pos %>%
+  left_join(labels %>% group_by(grouping_v3) %>% slice(1))
 ```
 
 ```{r K2}
 K_2_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  pivot_longer(cols = -sample, 
+               names_to = "Qval", 
+               values_to = "value")
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_2_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_2_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_2_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_4/output.qopt_with_sample_names", 
                         header = TRUE) %>%
   inner_join(., 
              metadata, 
@@ -100,18 +150,842 @@ barplot(t(K_2_rep_1[2:3]),
         cex.axis = 0.75, 
         cex.lab = 1, 
         xpd = NA)
+
+barplot(t(K_2_rep_2[2:3]), 
+        col = alewife_palette, 
+        names = K_2_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_2_rep_3[2:3]), 
+        col = alewife_palette, 
+        names = K_2_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_2_rep_4[2:3]), 
+        col = alewife_palette, 
+        names = K_2_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+```
+
+```{r K3}
+K_3_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_3_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_3_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_3_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_3_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_3_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_3_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_3_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_3_rep_1[2:4]), 
+        col = alewife_palette, 
+        names = K_3_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_3_rep_2[2:4]), 
+        col = alewife_palette, 
+        names = K_3_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_3_rep_3[2:4]), 
+        col = alewife_palette, 
+        names = K_3_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_3_rep_4[2:4]), 
+        col = alewife_palette, 
+        names = K_3_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 2, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K4}
+K_4_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_4_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_4_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_4_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_4_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_4_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_4_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_4_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_4_rep_1[2:5]), 
+        col = alewife_palette, 
+        names = K_4_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 4, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_4_rep_2[2:5]), 
+        col = alewife_palette, 
+        names = K_4_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 4, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_4_rep_3[2:5]), 
+        col = alewife_palette, 
+        names = K_4_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 4, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_4_rep_4[2:5]), 
+        col = alewife_palette, 
+        names = K_4_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 4, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K5}
+K_5_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_5_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_5_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_5_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_5_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_5_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_5_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_5_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_5_rep_1[2:6]), 
+        col = alewife_palette, 
+        names = K_5_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 5, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_5_rep_2[2:6]), 
+        col = alewife_palette, 
+        names = K_5_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 5, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_5_rep_3[2:6]), 
+        col = alewife_palette, 
+        names = K_5_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 5, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_5_rep_4[2:6]), 
+        col = alewife_palette, 
+        names = K_5_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 5, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K6}
+K_6_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_6_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_6_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_6_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_6_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_6_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_6_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_6_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_6_rep_1[2:7]), 
+        col = alewife_palette, 
+        names = K_6_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 6, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_6_rep_2[2:7]), 
+        col = alewife_palette, 
+        names = K_6_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 6, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_6_rep_3[2:7]), 
+        col = alewife_palette, 
+        names = K_6_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 6, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_6_rep_4[2:7]), 
+        col = alewife_palette, 
+        names = K_6_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 6, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K7}
+K_7_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_7_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_7_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_7_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_7_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_7_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_7_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_7_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_7_rep_1[2:8]), 
+        col = alewife_palette, 
+        names = K_7_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 7, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_7_rep_2[2:8]), 
+        col = alewife_palette, 
+        names = K_7_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 7, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_7_rep_3[2:8]), 
+        col = alewife_palette, 
+        names = K_7_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 7, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_7_rep_4[2:8]), 
+        col = alewife_palette, 
+        names = K_7_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 7, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K8}
+K_8_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_8_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_8_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_8_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_8_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_8_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_8_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_8_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_8_rep_1[2:9]), 
+        col = alewife_palette, 
+        names = K_8_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 8, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_8_rep_2[2:9]), 
+        col = alewife_palette, 
+        names = K_8_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 8, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_8_rep_3[2:9]), 
+        col = alewife_palette, 
+        names = K_8_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 8, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_8_rep_4[2:9]), 
+        col = alewife_palette, 
+        names = K_8_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 8, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K9}
+K_9_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_9_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_9_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_9_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_9_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_9_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_9_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_9_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_9_rep_1[2:10]), 
+        col = alewife_palette, 
+        names = K_9_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 9, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_9_rep_2[2:10]), 
+        col = alewife_palette, 
+        names = K_9_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 9, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_9_rep_3[2:10]), 
+        col = alewife_palette, 
+        names = K_9_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 9, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_9_rep_4[2:10]), 
+        col = alewife_palette, 
+        names = K_9_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 9, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+
+```{r K10}
+K_10_rep_1 <- read.table("data/ngsadmix_all/maf_0.05/K_10_rep_1/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_10_rep_2 <- read.table("data/ngsadmix_all/maf_0.05/K_10_rep_2/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_10_rep_3 <- read.table("data/ngsadmix_all/maf_0.05/K_10_rep_3/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+K_10_rep_4 <- read.table("data/ngsadmix_all/maf_0.05/K_10_rep_4/output.qopt_with_sample_names", 
+                        header = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+barplot(t(K_10_rep_1[2:11]), 
+        col = alewife_palette, 
+        names = K_10_rep_1$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 10, rep 1", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_10_rep_2[2:11]), 
+        col = alewife_palette, 
+        names = K_10_rep_2$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 10, rep 2", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_10_rep_3[2:11]), 
+        col = alewife_palette, 
+        names = K_10_rep_3$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 10, rep 3", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+
+barplot(t(K_10_rep_4[2:11]), 
+        col = alewife_palette, 
+        names = K_10_rep_4$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        main = "K 10, rep 4", 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
 ```
 
 ```{r}
-source("test.R")
-K2_rep2 <- read.table("data/ngsadmix_all/maf_0.05/K_2_rep_2/output.qopt_with_sample_names", 
-                      header = TRUE)
-plotAdmix(qdata = K2_rep2, 
-          metadata = metadata, 
-          pop = WATER_NAME, 
-          group = grouping_v3, 
-          pord = word, 
-          gord = gord, 
-          colorpalette = alewife_palette)
+ngsadmix_files <- dir_ls("data/ngsadmix_all", 
+                         recurse = TRUE, 
+                         glob = "*.qopt_with_sample_names")
+
+ngsAdmix_tib <- lapply(ngsadmix_files, function(x) {
+  read.table(x, 
+             header = TRUE) %>%
+    pivot_longer(cols = -sample, 
+                 names_to = "Qval", 
+                 values_to = "value") %>%
+    mutate(path = x, 
+           .before = sample)
+}) %>%
+  bind_rows() %>%
+  filter(!is.na(value)) %>%
+  mutate(Qval = str_replace(Qval, 
+                            "X", 
+                            "Q")) %>%
+  extract(path, 
+          into = c("K", 
+                   "rep"), 
+          regex = ".*K_([0-9]+)_rep_([0-9]+)/.*$", 
+          convert = TRUE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID"), 
+             relationship = "many-to-many") %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+```
+
+```{r}
+ggplot(ngsAdmix_tib) +
+  geom_col(mapping = aes(x = sample, 
+                         y = value, 
+                         fill = Qval)) +
+  scale_fill_manual(values = alewife_palette) + 
+  scale_x_discrete(label = metadata$WATER_NAME) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   size = 8, 
+                                   vjust = 0.5)) +
+  facet_grid(K ~ rep)
 ```
 
