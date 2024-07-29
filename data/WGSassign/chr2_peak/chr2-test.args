@@ -1,0 +1,10 @@
+WGSassign
+Time: 29/07/2024 12:27:42
+Directory: /home/hmoyle
+Options:
+	-beagle chr2-beagle-gl.gz
+	-threads 10
+	-out WGSassign/chr2-test
+	-pop_af_IDs allfish.IDs.txt
+	-get_reference_af
+	-ne_obs
