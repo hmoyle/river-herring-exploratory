@@ -1,0 +1,514 @@
+---
+title: "Sliding Windows Analysis"
+subtitle: "Anadromous Populations, Size 50kb step 10kb"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ggtext)
+```
+
+```{r data_org, echo = FALSE}
+cols <- c("region", 
+          "chr", 
+          "midPos", 
+          "Nsites", 
+          "Fst")
+
+
+### Black Creek vs Choptank River ###
+BlC_ChR <- read_delim("data/sliding_window_fst_anad_pops/BlC--x--ChR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+BlC_ChR_cum <- BlC_ChR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+BlC_ChR <- BlC_ChR %>%
+  inner_join(BlC_ChR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+BlC_ChR_axis_set <- BlC_ChR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Black Creek vs Hudson River ###
+BlC_HdR <- read_delim("data/sliding_window_fst_anad_pops/BlC--x--HdRa--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+BlC_HdR_cum <- BlC_HdR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+BlC_HdR <- BlC_HdR %>%
+  inner_join(BlC_HdR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+BlC_HdR_axis_set <- BlC_HdR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Black Creek vs Miramichi River ###
+BlC_MrR <- read_delim("data/sliding_window_fst_anad_pops/BlC--x--MrR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+BlC_MrR_cum <- BlC_MrR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+BlC_MrR <- BlC_MrR %>%
+  inner_join(BlC_MrR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+BlC_MrR_axis_set <- BlC_MrR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Black Creek vs Saco River ###
+BlC_ScR <- read_delim("data/sliding_window_fst_anad_pops/BlC--x--ScR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+BlC_ScR_cum <- BlC_ScR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+BlC_ScR <- BlC_ScR %>%
+  inner_join(BlC_ScR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+BlC_ScR_axis_set <- BlC_ScR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Choptank River vs Miramichi River ###
+ChR_MrR <- read_delim("data/sliding_window_fst_anad_pops/ChR--x--MrR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+ChR_MrR_cum <- ChR_MrR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+ChR_MrR <- ChR_MrR %>%
+  inner_join(ChR_MrR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+ChR_MrR_axis_set <- ChR_MrR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Choptank River vs Saco River ###
+ChR_ScR <- read_delim("data/sliding_window_fst_anad_pops/ChR--x--ScR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+ChR_ScR_cum <- ChR_ScR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+ChR_ScR <- ChR_ScR %>%
+  inner_join(ChR_ScR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+ChR_ScR_axis_set <- ChR_ScR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Hudson River vs Choptank River ###
+HdR_ChR <- read_delim("data/sliding_window_fst_anad_pops/HdRa--x--ChR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+HdR_ChR_cum <- HdR_ChR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+HdR_ChR <- HdR_ChR %>%
+  inner_join(HdR_ChR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+HdR_ChR_axis_set <- HdR_ChR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Hudson River vs Miramichi River ###
+HdR_MrR <- read_delim("data/sliding_window_fst_anad_pops/HdRa--x--MrR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+HdR_MrR_cum <- HdR_MrR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+HdR_MrR <- HdR_MrR %>%
+  inner_join(HdR_MrR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+HdR_MrR_axis_set <- HdR_MrR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Hudson River vs Saco River ###
+HdR_ScR <- read_delim("data/sliding_window_fst_anad_pops/HdRa--x--ScR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+HdR_ScR_cum <- HdR_ScR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+HdR_ScR <- HdR_ScR %>%
+  inner_join(HdR_ScR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+HdR_ScR_axis_set <- HdR_ScR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Miramichi River vs Saco River ###
+MrR_ScR <- read_delim("data/sliding_window_fst_anad_pops/MrR--x--ScR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+MrR_ScR_cum <- MrR_ScR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+MrR_ScR <- MrR_ScR %>%
+  inner_join(MrR_ScR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+MrR_ScR_axis_set <- MrR_ScR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+```
+
+
+```{r BlC_x_ChR}
+BlC_ChR_plot <- ggplot(data = BlC_ChR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = BlC_ChR_axis_set$chr, 
+                     breaks = BlC_ChR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(BlC_ChR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Black C. vs Choptank R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+BlC_ChR_plot
+
+```
+
+
+```{r BlC_x_HdR}
+BlC_HdR_plot <- ggplot(data = BlC_HdR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = BlC_HdR_axis_set$chr, 
+                     breaks = BlC_HdR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(BlC_HdR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Black C. vs Hudson R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+BlC_HdR_plot
+
+```
+
+```{r BlC_x_MrR}
+BlC_MrR_plot <- ggplot(data = BlC_MrR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = BlC_MrR_axis_set$chr, 
+                     breaks = BlC_MrR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(BlC_MrR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Black C. vs Miramichi R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+BlC_MrR_plot
+
+```
+
+```{r BlC_x_ScR}
+BlC_ScR_plot <- ggplot(data = BlC_ScR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = BlC_ScR_axis_set$chr, 
+                     breaks = BlC_ScR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(BlC_ScR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Black C. vs Saco R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+BlC_ScR_plot
+
+```
+
+```{r ChR_x_MrR}
+ChR_MrR_plot <- ggplot(data = ChR_MrR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = ChR_MrR_axis_set$chr, 
+                     breaks = ChR_MrR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(ChR_MrR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Choptank R. vs Miramichi R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+ChR_MrR_plot
+
+```
+
+```{r ChR_x_ScR}
+ChR_ScR_plot <- ggplot(data = ChR_ScR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = ChR_ScR_axis_set$chr, 
+                     breaks = ChR_ScR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(ChR_ScR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Choptank R. vs Saco R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+ChR_ScR_plot
+
+```
+
+```{r HdR_x_ChR}
+HdR_ChR_plot <- ggplot(data = HdR_ChR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = HdR_ChR_axis_set$chr, 
+                     breaks = HdR_ChR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(HdR_ChR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Hudson R. vs Choptank R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+HdR_ChR_plot
+
+```
+
+```{r HdR_x_MrR}
+HdR_MrR_plot <- ggplot(data = HdR_MrR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = HdR_MrR_axis_set$chr, 
+                     breaks = HdR_MrR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(HdR_MrR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Hudson R. vs Miramichi R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+HdR_MrR_plot
+
+```
+
+```{r HdR_x_ScR}
+HdR_ScR_plot <- ggplot(data = HdR_ScR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = HdR_ScR_axis_set$chr, 
+                     breaks = HdR_ScR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(HdR_ScR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Hudson R. vs Saco R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+HdR_ScR_plot
+
+```
+
+```{r MrR_x_ScR}
+MrR_ScR_plot <- ggplot(data = MrR_ScR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = MrR_ScR_axis_set$chr, 
+                     breaks = MrR_ScR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(MrR_ScR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Miramichi R. vs Saco R.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+MrR_ScR_plot
+
+```
+
+```{r saving_plots, eval = FALSE}
+### Using ggsave to save the manhattan plots, or as I will now refer to it: ###
+# Saving Private Plots (Ryan lol) ##
+ggsave("figures/sliding-windows-fst/MIDA-x-NATLA-sz50-chrom19-spike.png", 
+       plot = mxn50_chr19_spike_plot, 
+       width = 10, 
+       height = 4)
+```
+
+
+Hudson River appears to be driving the difference on the chromosome 3 peak. Both Saco River and Miramichi River are both different on the chromosome 2 peak, though Miramichi River seems to be driving the difference to be over 50%. Miramichi River and Saco River are in different managing units, where Miramichi R. is part of the Canada MU and Saco River is part of the Northern New England MU. Hudson River, Choptank River, and Black Creek are part of the Mid-Atlantic MU which is why we see a lower average genome-wide FST, particularly between Black Creek and Hudson River as Black C. is part of the Hudson R. watershed. I believe more samples from the Canada MU are needed to assess the origins of the Great Lakes alewife populations to be able to make a concrete case. Ideally, I would be able to also include the Southern New England MU (for which we have no anadromous low-coverage whole-genome sequences in this dataset). 
+

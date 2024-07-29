@@ -1,9 +1,20 @@
-grouping_v3,group_label
-MIDA,Mid-Altantic
-NATLA,N. Atlantic
-GRTL,Great Lakes
-FINL,Finger Lakes
-BLUE,Blueback
-HYBR,Hybrid
-MIDL,Stranglings
-CONL,Connecticut Lakes
+grouping_v3,group_label,WATER_NAME,pop
+MIDA,Mid-Altantic,Choptank River,Choptank R.
+MIDA,Mid-Atlantic,Hudson River,Hudson R.
+MIDA,Mid-Atlantic,Black Creek,Black C.
+NATLA,N. Atlantic,Miramichi River, Miramichi R.
+NATLA,N. Altantic,Saco River,Saco R.
+GRTL,Great Lakes,Lake Ontario,L. Ontario
+GRTL,Great Lakes,Lake Michigan,L. Michigan
+GRTL,Great Lakes,Lake Superior,L. Superior
+FINL,Finger Lakes,Canandaigua Lake, Canandaigua L.
+FINL,Finger Lakes,Cayuga Lake,Cayuga L.
+FINL,Finger Lakes,Otisco Lake,Otisco L.
+FINL,Finger Lakes,Seneca Lake,Seneca L.
+BLUE,Blueback,,
+HYBR,Hybrid,Roanoke River,Roanoke R.
+MIDL,Stranglings,East Grand Lake,East Grand L.
+MIDL,Stranglings,Lake Champlain,L. Champlain
+CONL,Connecticut Lakes,Rogers Lake,Rogers L.
+CONL,Connecticut Lakes,Pattagansett Lake,Pattagansett L.
+CONL,Connecticut Lakes,Quonnipaug Lake,Quonnipaug L.

@@ -1,0 +1,79 @@
+---
+title: "WGSassign process"
+author: "Hana K. Moyle"
+date: "2024 July 29"
+output: html_notebook
+---
+
+
+Right now, I am poking around the data with WGSassign to get reference population allele frequencies, reference effective sample sizes, and assign individuals of "unknown" origin. For my reference populations, I use the blueback and anadromous samples. From the reference pop allele frequencies our landlocked samples get assigned to a population. Right now I am just doing this with the chromosome 2 peak region, because when I tried to read in the allele frequencies from the whole genome R just terminated the whole session immediately.
+
+To make the beagle file that WGSassign takes, I use Eric's process of turning a vcf into a beagle file (https://eriqande.github.io/con-gen-csu/nmfs-bioinf/handling-vcf-files.html#make-a-beagle-file-for-input-to-angsd-from-a-vcf-file):
+```{sh, eval = FALSE}
+### this was all done on megabox ###
+mamba activate bcftools1.15
+awk -F"\t" '{print $1}' ref.IDs.txt > ref_samps.txt # made the IDs file straight from the metadata, the first col being the sample IDs and the second col the pops
+bcftools view -S ref_samps.txt data/namaglfl.vcf.gz > data/reference.vcf.gz # subset the vcf for our reference pops
+bcftools query -l data/reference.vcf.gz | awk '
+  BEGIN {printf("marker\tallele1\tallele2");}
+  {printf("\t%s\t%s\t%s", $1, $1, $1);}
+  END {printf("\n");}
+' > ref.header # make the beagle header
+scripts/vcf2beagle.sh data/reference.vcf.gz > ref.body # Eric's script so that I don't have to keep track of things so closely
+gzip ref.body ref.header # zip up the babies
+cat ref.header.gz ref.body.gz > data/ref_beagle_gl.gz # mash them together
+mamba deactivate
+```
+
+Repeat for the populations of interest.
+
+Begin run through WGSassign:
+```{sh, eval = FALSE}
+WGSassign --beagle data/ref_beagle_gl.gz --pop_af_IDs data/ref.IDs.txt --get_reference_af --ne_obs --out out/ref.anad_and_blue --threads 10 # get the ref pop allele freqs and ref pop effective size
+WGSassign --beagle data/int_pops_beagle_gl.gz --pop_af_file out/ref.anad_and_blue.pop_af.npy --get_pop_like --out out/int_pops.landlocked --threads 4 # assign pops of interest to reference pop
+```
+
+
+Now we can start working with the outputs.
+
+```{r}
+library(tidyverse); library(RcppCNPy) # get your packages
+
+metadata <- read_csv("data/herring_metadata.csv") %>%
+  select(NMFS_DNA_ID, GENUS, SPECIES, STATE_F, 
+         WATERSHED, WATER_NAME, grouping_v3)
+pop_likes <- read_delim("data/WGSassign/chr2_peak/int_pops.landlocked.pop_like.txt", 
+                        delim = " ",
+                        col_names = c("BLUE_loglike", 
+                                    "MIDA_loglike", 
+                                    "NATLA_loglike")) 
+data <- read_tsv("data/WGSassign/chr2_peak/int_pops.IDs.txt", 
+                            col_names = c("NMFS_DNA_ID", 
+                                          "grouping_v3")) %>%
+  add_column(pop_likes) %>%
+  inner_join(.,
+             metadata, 
+             by = c("NMFS_DNA_ID", "grouping_v3")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME,
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
+
+```
+```{r}
+barplot(t(data[3:5]), 
+        col = c("steelblue", 
+                "palegreen4", 
+                "maroon"), 
+        names = data$WATER_NAME, 
+        las = 2, 
+        cex.names = 0.5, 
+        space = 0, 
+        border = "white", 
+        cex.axis = 0.75, 
+        cex.lab = 1, 
+        xpd = NA)
+```
+

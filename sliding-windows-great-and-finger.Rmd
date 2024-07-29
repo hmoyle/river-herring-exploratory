@@ -1,0 +1,514 @@
+---
+title: "Sliding Windows Analysis"
+subtitle: "Great and Finger Lakes Populations, Size 50kb step 10kb"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ggtext)
+```
+
+```{r data_org, echo = FALSE}
+cols <- c("region", 
+          "chr", 
+          "midPos", 
+          "Nsites", 
+          "Fst")
+
+
+### Canandaigua Lake vs Cayuga Lake ###
+CnL_Cyl <- read_delim("data/sliding_window_fst_great_and_finger/CnL--x--CyL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+CnL_Cyl_cum <- CnL_Cyl %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+CnL_Cyl <- CnL_Cyl %>%
+  inner_join(CnL_Cyl_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+CnL_Cyl_axis_set <- CnL_Cyl %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Canandaigua Lake vs Otisco  Lake ###
+CnL_OtL <- read_delim("data/sliding_window_fst_great_and_finger/CnL--x--OtL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+CnL_OtL_cum <- CnL_OtL %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+CnL_OtL <- CnL_OtL %>%
+  inner_join(CnL_OtL_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+CnL_OtL_axis_set <- CnL_OtL %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Canandaigua Lake vs Seneca Lake ###
+CnL_SnL <- read_delim("data/sliding_window_fst_great_and_finger/CnL--x--SnL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+CnL_SnL_cum <- CnL_SnL %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+CnL_SnL <- CnL_SnL %>%
+  inner_join(CnL_SnL_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+CnL_SnL_axis_set <- CnL_SnL %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Cayuga Lake vs Otisco Lake ###
+CyL_OtL <- read_delim("data/sliding_window_fst_great_and_finger/CyL--x--OtL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+CyL_OtL_cum <- CyL_OtL %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+CyL_OtL <- CyL_OtL %>%
+  inner_join(CyL_OtL_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+CyL_OtL_axis_set <- CyL_OtL %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Cayuga Lake vs Seneca Lake ###
+CyL_SnL <- read_delim("data/sliding_window_fst_great_and_finger/CyL--x--SnL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+CyL_SnL_cum <- CyL_SnL %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+CyL_SnL <- CyL_SnL %>%
+  inner_join(CyL_SnL_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+CyL_SnL_axis_set <- CyL_SnL %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Michigan vs Lake Ontario ###
+LkM_LkO <- read_delim("data/sliding_window_fst_great_and_finger/LkM--x--LkO--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkM_LkO_cum <- LkM_LkO %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkM_LkO <- LkM_LkO %>%
+  inner_join(LkM_LkO_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkM_LkO_axis_set <- LkM_LkO %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Michigan vs Lake Superior ###
+LkM_LkS <- read_delim("data/sliding_window_fst_great_and_finger/LkM--x--LkS--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkM_LkS_cum <- LkM_LkS %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkM_LkS <- LkM_LkS %>%
+  inner_join(LkM_LkS_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkM_LkS_axis_set <- LkM_LkS %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Ontario vs Lake Superior ###
+LkO_LkS <- read_delim("data/sliding_window_fst_great_and_finger/LkO--x--LkS--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkO_LkS_cum <- LkO_LkS %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkO_LkS <- LkO_LkS %>%
+  inner_join(LkO_LkS_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkO_LkS_axis_set <- LkO_LkS %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Otisco Lake vs Seneca Lake ###
+OtL_SnL <- read_delim("data/sliding_window_fst_great_and_finger/OtL--x--SnL--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+OtL_SnL_cum <- OtL_SnL %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+OtL_SnL <- OtL_SnL %>%
+  inner_join(OtL_SnL_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+OtL_SnL_axis_set <- OtL_SnL %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Miramichi River vs Saco River ###
+# MrR_ScR <- read_delim("data/sliding_window_fst_great_and_finger/MrR--x--ScR--size-50000--step-10000.tsv", 
+#                     skip = 2, 
+#                     delim = "\t", 
+#                     col_names = cols,
+#                     show_col_types = FALSE)
+# MrR_ScR_cum <- MrR_ScR %>%
+#   group_by(chr) %>%
+#   summarise(max_pos = max(midPos)) %>%
+#   mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+#   select(chr, pos_add)
+# 
+# MrR_ScR <- MrR_ScR %>%
+#   inner_join(MrR_ScR_cum, by = "chr") %>%
+#   mutate(pos_cum = midPos + pos_add)
+# 
+# MrR_ScR_axis_set <- MrR_ScR %>%
+#   group_by(chr) %>%
+#   summarise(center = mean(pos_cum))
+```
+
+
+```{r CnL_x_CyL}
+CnL_Cyl_plot <- ggplot(data = CnL_Cyl, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = CnL_Cyl_axis_set$chr, 
+                     breaks = CnL_Cyl_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(CnL_Cyl_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Canandaigua L. vs Cayuga L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+CnL_Cyl_plot
+
+```
+
+
+```{r CnL_x_OtL}
+CnL_OtL_plot <- ggplot(data = CnL_OtL, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = CnL_OtL_axis_set$chr, 
+                     breaks = CnL_OtL_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(CnL_OtL_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Canandaigua L. vs Otisco L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+CnL_OtL_plot
+
+```
+
+```{r CnL_x_SnL}
+CnL_SnL_plot <- ggplot(data = CnL_SnL, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = CnL_SnL_axis_set$chr, 
+                     breaks = CnL_SnL_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(CnL_SnL_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Canandaigua L. vs Seneca L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+CnL_SnL_plot
+
+```
+
+```{r CyL_x_OtL}
+CyL_OtL_plot <- ggplot(data = CyL_OtL, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = CyL_OtL_axis_set$chr, 
+                     breaks = CyL_OtL_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(CyL_OtL_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Cayuga L. vs Otisco L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+CyL_OtL_plot
+
+```
+
+```{r CyL_x_SnL}
+CyL_SnL_plot <- ggplot(data = CyL_SnL, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = CyL_SnL_axis_set$chr, 
+                     breaks = CyL_SnL_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(CyL_SnL_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Cayuga L. vs Seneca L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+CyL_SnL_plot
+
+```
+
+```{r LkM_x_LkO}
+LkM_LkO_plot <- ggplot(data = LkM_LkO, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkM_LkO_axis_set$chr, 
+                     breaks = LkM_LkO_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkM_LkO_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Michigan vs L. Ontario", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkM_LkO_plot
+
+```
+
+```{r LkM_x_LkS}
+LkM_LkS_plot <- ggplot(data = LkM_LkS, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkM_LkS_axis_set$chr, 
+                     breaks = LkM_LkS_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkM_LkS_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Michigan vs L. Superior", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkM_LkS_plot
+
+```
+
+```{r LkO_x_LkS}
+LkO_LkS_plot <- ggplot(data = LkO_LkS, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkO_LkS_axis_set$chr, 
+                     breaks = LkO_LkS_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkO_LkS_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Ontario vs L. Superior", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkO_LkS_plot
+
+```
+
+```{r OtL_x_SnL}
+OtL_SnL_plot <- ggplot(data = OtL_SnL, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = OtL_SnL_axis_set$chr, 
+                     breaks = OtL_SnL_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(OtL_SnL_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Otisco L. vs Seneca L.", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+OtL_SnL_plot
+
+```
+
+```{r MrR_x_ScR}
+# MrR_ScR_plot <- ggplot(data = MrR_ScR, 
+#                        mapping = aes(x = pos_cum, 
+#                                      y = Fst, 
+#                                      color = as_factor(chr))) +
+#   geom_point(alpha = 0.75, size = 0.5) +
+#   scale_x_continuous(label = MrR_ScR_axis_set$chr, 
+#                      breaks = MrR_ScR_axis_set$center) +
+#   scale_y_continuous(expand = c(0,0), 
+#                      limits = c(-0.05, 1)) +
+#   scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+#                                   unique(length(MrR_ScR_axis_set$chr)))) +
+#   labs(x = NULL, 
+#        y = "Fst", 
+#        title = "Miramichi R. vs Saco R.", 
+#        subtitle = "Size 50,000 Step 10,000") +
+#   theme_bw() +
+#   theme(legend.position = "none",
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank(),
+#         axis.title.y = element_markdown(),
+#         axis.text.x = element_text(angle = 90,
+#                                   size = 8,
+#                                   vjust = 0.5))
+# MrR_ScR_plot
+
+```
+
+```{r saving_plots, eval = FALSE}
+### Using ggsave to save the manhattan plots, or as I will now refer to it: ###
+# Saving Private Plots (Ryan lol) ##
+ggsave("figures/sliding-windows-fst/MIDA-x-NATLA-sz50-chrom19-spike.png", 
+       plot = mxn50_chr19_spike_plot, 
+       width = 10, 
+       height = 4)
+```
+
+
+
+

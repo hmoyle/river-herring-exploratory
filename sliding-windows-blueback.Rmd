@@ -1,0 +1,511 @@
+---
+title: "Sliding Windows Analysis"
+subtitle: "Blueback Populations, Size 50kb step 10kb"
+output: html_notebook
+---
+
+```{r libraries, echo = FALSE}
+library(tidyverse)
+library(ggtext)
+```
+
+```{r data_org, echo = FALSE}
+cols <- c("region", 
+          "chr", 
+          "midPos", 
+          "Nsites", 
+          "Fst")
+
+
+### Altamaha River vs Hudson River ###
+AlR_HdR <- read_delim("data/sliding_window_fst_blueback/AlR--x--HdRb--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+AlR_HdR_cum <- AlR_HdR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+AlR_HdR <- AlR_HdR %>%
+  inner_join(AlR_HdR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+AlR_HdR_axis_set <- AlR_HdR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Altamaha River vs Petitcodiac River ###
+AlR_PtR <- read_delim("data/sliding_window_fst_blueback/AlR--x--PtR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+AlR_PtR_cum <- AlR_PtR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+AlR_PtR <- AlR_PtR %>%
+  inner_join(AlR_PtR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+AlR_PtR_axis_set <- AlR_PtR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Hartwell vs Altamaha River ###
+LkH_AlR <- read_delim("data/sliding_window_fst_blueback/LkH--x--AlR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkH_AlR_cum <- LkH_AlR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkH_AlR <- LkH_AlR %>%
+  inner_join(LkH_AlR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkH_AlR_axis_set <- LkH_AlR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Hartwell vs Hudson River ###
+LkH_HdR <- read_delim("data/sliding_window_fst_blueback/LkH--x--HdRb--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkH_HdR_cum <- LkH_HdR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkH_HdR <- LkH_HdR %>%
+  inner_join(LkH_HdR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkH_HdR_axis_set <- LkH_HdR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Hartwell vs Lake Yonah ###
+LkH_LkY <- read_delim("data/sliding_window_fst_blueback/LkH--x--LkY--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkH_LkY_cum <- LkH_LkY %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkH_LkY <- LkH_LkY %>%
+  inner_join(LkH_LkY_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkH_LkY_axis_set <- LkH_LkY %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Hartwell vs Petitcodiac River ###
+LkH_PtR <- read_delim("data/sliding_window_fst_blueback/LkH--x--PtR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkH_PtR_cum <- LkH_PtR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkH_PtR <- LkH_PtR %>%
+  inner_join(LkH_PtR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkH_PtR_axis_set <- LkH_PtR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Yonah vs Altamaha River ###
+LkY_AlR <- read_delim("data/sliding_window_fst_blueback/LkY--x--AlR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkY_AlR_cum <- LkY_AlR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkY_AlR <- LkY_AlR %>%
+  inner_join(LkY_AlR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkY_AlR_axis_set <- LkY_AlR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Yonah vs Altamaha River ###
+LkY_HdR <- read_delim("data/sliding_window_fst_blueback/LkY--x--HdRb--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkY_HdR_cum <- LkY_HdR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkY_HdR <- LkY_HdR %>%
+  inner_join(LkY_HdR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkY_HdR_axis_set <- LkY_HdR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Lake Yonah vs Petitcodiac River ###
+LkY_PtR <- read_delim("data/sliding_window_fst_blueback/LkY--x--PtR--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+LkY_PtR_cum <- LkY_PtR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+LkY_PtR <- LkY_PtR %>%
+  inner_join(LkY_PtR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+LkY_PtR_axis_set <- LkY_PtR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+
+### Petitcodiac River vs Hudson River ###
+PtR_HdR <- read_delim("data/sliding_window_fst_blueback/PtR--x--HdRb--size-50000--step-10000.tsv", 
+                    skip = 2, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE)
+PtR_HdR_cum <- PtR_HdR %>%
+  group_by(chr) %>%
+  summarise(max_pos = max(midPos)) %>%
+  mutate(pos_add = lag(cumsum(max_pos), default = 0)) %>%
+  select(chr, pos_add)
+
+PtR_HdR <- PtR_HdR %>%
+  inner_join(PtR_HdR_cum, by = "chr") %>%
+  mutate(pos_cum = midPos + pos_add)
+
+PtR_HdR_axis_set <- PtR_HdR %>%
+  group_by(chr) %>%
+  summarise(center = mean(pos_cum))
+```
+
+
+```{r AlR_x_HdR}
+AlR_HdR_plot <- ggplot(data = AlR_HdR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = AlR_HdR_axis_set$chr, 
+                     breaks = AlR_HdR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(AlR_HdR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Altamaha R. vs Hudson R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+AlR_HdR_plot
+
+```
+
+
+```{r AlR_x_PtR}
+AlR_PtR_plot <- ggplot(data = AlR_PtR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = AlR_PtR_axis_set$chr, 
+                     breaks = AlR_PtR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(AlR_PtR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Altamaha R. vs Petitcodiac R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+AlR_PtR_plot
+
+```
+
+```{r LkH_x_AlR}
+LkH_AlR_plot <- ggplot(data = LkH_AlR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkH_AlR_axis_set$chr, 
+                     breaks = LkH_AlR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkH_AlR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Hartwell vs Altamaha R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkH_AlR_plot
+
+```
+
+```{r LkH_x_HdR}
+LkH_HdR_plot <- ggplot(data = LkH_HdR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkH_HdR_axis_set$chr, 
+                     breaks = LkH_HdR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkH_HdR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Hartwell vs Hudson R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkH_HdR_plot
+
+```
+
+```{r LkH_x_LkY}
+LkH_LkY_plot <- ggplot(data = LkH_LkY, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkH_LkY_axis_set$chr, 
+                     breaks = LkH_LkY_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkH_LkY_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Hartwell vs L. Yonah Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkH_LkY_plot
+
+```
+
+```{r LkH_x_PtR}
+LkH_PtR_plot <- ggplot(data = LkH_PtR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkH_PtR_axis_set$chr, 
+                     breaks = LkH_PtR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkH_PtR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Hartwell vs Petitcodiac R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkH_PtR_plot
+
+```
+
+```{r LkY_x_AlR}
+LkY_AlR_plot <- ggplot(data = LkY_AlR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkY_AlR_axis_set$chr, 
+                     breaks = LkY_AlR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkY_AlR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Yonah vs Altamaha R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkY_AlR_plot
+
+```
+
+```{r LkY_x_HdR}
+LkY_HdR_plot <- ggplot(data = LkY_HdR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkY_HdR_axis_set$chr, 
+                     breaks = LkY_HdR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkY_HdR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Yonah vs Hudson R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkY_HdR_plot
+
+```
+
+```{r LkY_x_PtR}
+LkY_PtR_plot <- ggplot(data = LkY_PtR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = LkY_PtR_axis_set$chr, 
+                     breaks = LkY_PtR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(LkY_PtR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "L. Yonah vs Petitcodiac R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+LkY_PtR_plot
+
+```
+
+```{r PtR_x_HdR}
+PtR_HdR_plot <- ggplot(data = PtR_HdR, 
+                       mapping = aes(x = pos_cum, 
+                                     y = Fst, 
+                                     color = as_factor(chr))) +
+  geom_point(alpha = 0.75, size = 0.5) +
+  scale_x_continuous(label = PtR_HdR_axis_set$chr, 
+                     breaks = PtR_HdR_axis_set$center) +
+  scale_y_continuous(expand = c(0,0), 
+                     limits = c(-0.05, 1)) +
+  scale_color_manual(values = rep(c("#242b35", "#869ca8"), 
+                                  unique(length(PtR_HdR_axis_set$chr)))) +
+  labs(x = NULL, 
+       y = "Fst", 
+       title = "Petitcodiac R. vs Hudson R. Blueback", 
+       subtitle = "Size 50,000 Step 10,000") +
+  theme_bw() +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        axis.title.y = element_markdown(),
+        axis.text.x = element_text(angle = 90,
+                                  size = 8,
+                                  vjust = 0.5))
+PtR_HdR_plot
+
+```
+
+```{r saving_plots, eval = FALSE}
+### Using ggsave to save the manhattan plots, or as I will now refer to it: ###
+# Saving Private Plots (Ryan lol) ##
+ggsave("figures/sliding-windows-fst/MIDA-x-NATLA-sz50-chrom19-spike.png", 
+       plot = mxn50_chr19_spike_plot, 
+       width = 10, 
+       height = 4)
+```
+
