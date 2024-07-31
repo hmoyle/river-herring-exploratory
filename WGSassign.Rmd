@@ -39,6 +39,37 @@ Now we can start working with the outputs.
 ```{r}
 library(tidyverse); library(RcppCNPy) # get your packages
 
+gord <- c("BLUE", 
+           "HYBR", 
+           "GRTL", 
+           "FINL", 
+           "MIDL", 
+           "CONL", 
+           "NATLA", 
+           "MIDA")
+word <- c("Petitcodiac River", 
+           "Hudson River", 
+           "Lake Yonah", 
+           "Lake Hartwell", 
+           "Altamaha River", 
+           "Roanoke River", 
+           "Lake Superior", 
+           "Lake Michigan", 
+           "Lake Ontario", 
+           "Canandaigua Lake", 
+           "Cayuga Lake", 
+           "Seneca Lake", 
+           "Otisco Lake", 
+           "East Grand Lake", 
+           "Lake Champlain", 
+           "Pattagansett Lake", 
+           "Rogers Lake", 
+           "Quonnipaug Lake", 
+           "Miramichi River", 
+           "Saco River", 
+           "Black Creek", 
+           "Choptank River")
+
 metadata <- read_csv("data/herring_metadata.csv") %>%
   select(NMFS_DNA_ID, GENUS, SPECIES, STATE_F, 
          WATERSHED, WATER_NAME, grouping_v3) %>%
