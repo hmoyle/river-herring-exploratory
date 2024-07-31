@@ -41,7 +41,52 @@ library(tidyverse); library(RcppCNPy) # get your packages
 
 metadata <- read_csv("data/herring_metadata.csv") %>%
   select(NMFS_DNA_ID, GENUS, SPECIES, STATE_F, 
-         WATERSHED, WATER_NAME, grouping_v3)
+         WATERSHED, WATER_NAME, grouping_v3) %>%
+  mutate(newname = paste0(WATER_NAME, 
+                          "-", 
+                          NMFS_DNA_ID)) %>%
+  mutate(newname = str_replace_all(newname, 
+                                   " +", 
+                                   "_")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME, 
+                        levels = word)) %>%
+  arrange(gfact, wfact) %>%
+  filter(grouping_v3 == "HYBR" | 
+         grouping_v3 == "GRTL" | 
+         grouping_v3 == "FINL" | 
+         grouping_v3 == "MIDL" | 
+         grouping_v3 == "CONL")
+
+nord <- unique(metadata$newname)
+
+labels <- read_tsv("data/admix-labels.tsv")
+
+tmp <- metadata %>% 
+  mutate(xpos = 1:n())
+
+group_pos <- tmp %>%
+  group_by(grouping_v3) %>%
+  summarise(midx = (min(xpos) - 0.5 + max(xpos) + 0.5) / 2, 
+            linex = max(xpos) + 0.5) %>%
+  mutate(midy = 1)
+
+group_labels <- group_pos %>%
+  left_join(labels %>% group_by(grouping_v3) %>% slice(1)) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord)) %>%
+  arrange(gfact)
+
+pop_pos <- tmp %>%
+  group_by(grouping_v3, WATER_NAME) %>%
+  summarise(midx = (min(xpos) - 0.5 + max(xpos) + 0.5) / 2, 
+            linex = max(xpos) + 0.5) %>%
+  mutate(midy = 0)
+
+pop_labels <- pop_pos %>%
+  left_join(labels)
+
 pop_likes <- read_delim("data/WGSassign/chr2_peak/int_pops.landlocked.pop_like.txt", 
                         delim = " ",
                         col_names = c("BLUE_loglike", 
@@ -51,6 +96,9 @@ data <- read_tsv("data/WGSassign/chr2_peak/int_pops.IDs.txt",
                             col_names = c("NMFS_DNA_ID", 
                                           "grouping_v3")) %>%
   add_column(pop_likes) %>%
+  pivot_longer(cols = -c("NMFS_DNA_ID", "grouping_v3"), 
+               names_to = "pop_like", 
+               values_to = "value") %>%
   inner_join(.,
              metadata, 
              by = c("NMFS_DNA_ID", "grouping_v3")) %>%
@@ -62,18 +110,23 @@ data <- read_tsv("data/WGSassign/chr2_peak/int_pops.IDs.txt",
 
 
 ```
+
+
 ```{r}
-barplot(t(data[3:5]), 
-        col = c("steelblue", 
-                "palegreen4", 
-                "maroon"), 
-        names = data$WATER_NAME, 
-        las = 2, 
-        cex.names = 0.5, 
-        space = 0, 
-        border = "white", 
-        cex.axis = 0.75, 
-        cex.lab = 1, 
-        xpd = NA)
+ggplot(data) +
+  geom_col(mapping = aes(x = factor(newname, 
+                                    levels = nord), 
+                         y = value, 
+                         fill = pop_like)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   size = 8, 
+                                   vjust = 0.5)) +
+  labs(x = "", 
+       y = "population log-likelihood") +
+  geom_vline(xintercept = pop_labels$linex, 
+             linetype = 2, 
+             color = "gray25") +
+  geom_vline(xintercept = group_labels$linex)
 ```
 
