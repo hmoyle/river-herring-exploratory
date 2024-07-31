@@ -156,8 +156,9 @@ ggplot(data) +
   labs(x = "", 
        y = "population log-likelihood") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 

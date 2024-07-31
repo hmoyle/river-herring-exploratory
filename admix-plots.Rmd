@@ -177,7 +177,7 @@ ggplot(ngsAdmix_tib) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
+             linetype = 1, 
              color = "gray25") +
   geom_vline(xintercept = group_labels$linex)
 ```
@@ -227,8 +227,9 @@ ggplot(K2) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -249,8 +250,9 @@ ggplot(K3) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -271,8 +273,9 @@ ggplot(K4) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -293,8 +296,9 @@ ggplot(K5) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -315,8 +319,9 @@ ggplot(K6) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -337,8 +342,9 @@ ggplot(K7) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -359,8 +365,9 @@ ggplot(K8) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -381,8 +388,9 @@ ggplot(K9) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
@@ -403,8 +411,9 @@ ggplot(K10) +
   labs(x = "", 
        y = "Q value") +
   geom_vline(xintercept = pop_labels$linex, 
-             linetype = 2, 
-             color = "gray25") +
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
