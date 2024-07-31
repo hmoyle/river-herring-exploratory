@@ -1,0 +1,21 @@
+---
+title: "D-Statistics"
+output: html_notebook
+---
+
+```{r libraries}
+library(tidyverse)
+```
+
+
+```{r}
+data <- read_tsv("data/d_stats/MIDL_test.txt")
+```
+
+```{r}
+ggplot(filter(data, H3 == "s0007.bam")) +
+  geom_tile(mapping = aes(x = H1, 
+                          y = H2, 
+                          fill = Dstat))
+```
+

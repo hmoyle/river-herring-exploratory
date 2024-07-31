@@ -162,3 +162,8 @@ ggplot(data) +
   geom_vline(xintercept = group_labels$linex)
 ```
 
+```{r}
+fisher <- npyLoad("data/WGSassign/chr2_peak/chr2-test.fisher_obs.npy")
+```
+
+
