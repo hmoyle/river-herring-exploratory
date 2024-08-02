@@ -163,7 +163,45 @@ ggplot(data) +
 ```
 
 ```{r}
-fisher <- npyLoad("data/WGSassign/chr2_peak/chr2-test.fisher_obs.npy")
+pop_likes_19 <- read_delim("data/WGSassign/chr19/chr19_int_pops.landlocked.pop_like.txt", 
+                        delim = " ",
+                        col_names = c("BLUE_loglike", 
+                                    "MIDA_loglike", 
+                                    "NATLA_loglike")) 
+data_19 <- read_tsv("data/WGSassign/chr2_peak/int_pops.IDs.txt", 
+                            col_names = c("NMFS_DNA_ID", 
+                                          "grouping_v3")) %>%
+  add_column(pop_likes_19) %>%
+  pivot_longer(cols = -c("NMFS_DNA_ID", "grouping_v3"), 
+               names_to = "pop_like", 
+               values_to = "value") %>%
+  inner_join(.,
+             metadata, 
+             by = c("NMFS_DNA_ID", "grouping_v3")) %>%
+  mutate(gfact = factor(grouping_v3, 
+                        levels = gord), 
+         wfact = factor(WATER_NAME,
+                        levels = word)) %>%
+  arrange(gfact, wfact)
+
 ```
 
+```{r}
+ggplot(data_19) +
+  geom_col(mapping = aes(x = factor(newname, 
+                                    levels = nord), 
+                         y = value, 
+                         fill = pop_like)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   size = 8, 
+                                   vjust = 0.5)) +
+  labs(x = "", 
+       y = "population log-likelihood") +
+  geom_vline(xintercept = pop_labels$linex, 
+             linetype = 1, 
+             color = "gray25", 
+             linewidth = 0.5) +
+  geom_vline(xintercept = group_labels$linex)
+```
 

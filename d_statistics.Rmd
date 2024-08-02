@@ -19,3 +19,83 @@ ggplot(filter(data, H3 == "s0007.bam")) +
                           fill = Dstat))
 ```
 
+```{r}
+data2 <- read_tsv("data/d_stats/MIDL_w_blue_test.txt")
+```
+
+```{r}
+ggplot(data2) +
+  geom_histogram(mapping = aes(x = Z), 
+                 binwidth = 5)
+ggplot(data2) +
+  geom_boxplot(mapping = aes(x = Dstat, y = H3)) 
+```
+
+```{r}
+observed <- read_tsv("data/d_stats/result.Observed.txt")
+errCor <- read_tsv("data/d_stats/result.ErrorCorr.txt")
+errCor_TransRem <- read_tsv("data/d_stats/result.ErrorCorr.TransRem.txt")
+TransRem <- read_tsv("data/d_stats/result.TransRem.txt")
+```
+
+```{r}
+ggplot(filter(observed, H3 == "EGL")) +
+  geom_tile(aes(x = factor(H1, levels = c("LCh", 
+                                          "LChWithError", 
+                                          "HdR")), 
+                y = factor(H2, levels = c("PtR", 
+                                          "HdR", 
+                                          "LChWithError")), 
+                fill = D)) +
+  labs(x = "H1", 
+       y = "H2", 
+       title = "East Grand Lake H3")
+```
+
+Lake Champlain is more closely related to East Grand Lake than Petitcodiac River Blueback. Hudson River Blueback are more closely related to Petitcodiac River Blueback than East Grand Lake alewife.
+
+```{r}
+ggplot(filter(observed, H3 == "LCh")) +
+  geom_tile(aes(x = factor(H1, levels = c("EGL", 
+                                          "LChWithError", 
+                                          "HdR")), 
+                y = factor(H2, levels = c("PtR", 
+                                          "HdR", 
+                                          "LChWithError")), 
+                fill = D)) +
+  labs(x = "H1", 
+       y = "H2", 
+       title = "Lake Champlain H3")
+```
+East Grand Lake is more closely related to Lake Champlain than Petitcodiac River Blueback. Hudson River Blueback are more closely related to Petitcodiac River Blueback than Lake Champlain Alewife.
+
+```{r}
+ggplot(filter(observed, H3 == "PtR")) +
+  geom_tile(aes(x = factor(H1, levels = c("EGL", 
+                                          "LCh", 
+                                          "LChWithError")), 
+                y = factor(H2, levels = c("HdR", 
+                                          "LChWithError", 
+                                          "LCh")), 
+                fill = D)) +
+  labs(x = "H1", 
+       y = "H2", 
+       title = "Petitcodiac River H3")
+```
+East Grand Lake is more closely related to Hudson River Blueback than Petitcodiac River Blueback. Lake Champlain Alewife is more closely related to Hudson River Blueback. East Grand Lake Alewife are more closely related to Petitcodiac River Blueback than Lake Champlain Alewife. 
+
+```{r}
+ggplot(filter(observed, H3 == "HdR")) +
+  geom_tile(aes(x = factor(H1, levels = c("EGL", 
+                                          "LCh", 
+                                          "LChWithError")), 
+                y = factor(H2, levels = c("PtR", 
+                                          "LChWithError", 
+                                          "LCh")), 
+                fill = D)) +
+  labs(x = "H1", 
+       y = "H2", 
+       title = "Hudson River H3")
+```
+East Grand Lake is more closely related to Petitcodiac River Blueback than Hudson River Blueback. Lake Champlain Alewife are more closely related to Petitcodiac River Blueback than Hudson River Blueback. East Grand Lake Alewife are more closely related to Hudson River Blueback than Lake Champlain Alewife. 
+
