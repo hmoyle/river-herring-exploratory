@@ -1,0 +1,82 @@
+---
+title: "Runs of Homozygosity"
+output: html_notebook
+---
+
+```{r libraries}
+library(tidyverse)
+```
+
+```{r}
+metadata <- read_csv("data/herring_metadata.csv") %>%
+  select(NMFS_DNA_ID, 
+         GENUS, 
+         SPECIES, 
+         STATE_F, 
+         WATERSHED, 
+         WATER_NAME, 
+         region) %>% 
+  mutate(newname = paste0(WATER_NAME, 
+                          "-", 
+                          NMFS_DNA_ID)) %>%
+  mutate(newname = str_replace_all(newname, 
+                                   " +", 
+                                   "_"))
+
+roh_rg <- read_delim("data/roh/mid-can_chrom2-test.tsv", 
+                     skip = 4, 
+                     delim = "\t")
+colnames(roh_rg) <- c("RG","sample","chrom","start","end","length_bp","num_markers","quality_avg_phred")
+
+data <- inner_join(roh_rg, 
+           metadata, 
+           by = c("sample" = "NMFS_DNA_ID"))
+
+ggplot() +
+  geom_segment(data = data, 
+               aes(x = start/(10^6), 
+                   y = newname, 
+                   xend = end/(10^6), 
+                   yend = newname), 
+               colour = "darkblue", 
+               alpha = 1, 
+               size = 3) +
+  theme_bw() +
+  ylab("sample ID") +
+  xlab("Chromosome position (Mbps")
+```
+
+```{r}
+cols <- c("RG",
+          "sample",
+          "chrom",
+          "start",
+          "end",
+          "length_bp",
+          "num_markers",
+          "quality_avg_phred")
+
+roh_rg_full <- read_delim("data/roh/river-herring_all-chroms.tsv", 
+                    skip = 4, 
+                    delim = "\t", 
+                    col_names = cols,
+                    show_col_types = FALSE) %>%
+  inner_join(., 
+             metadata, 
+             by = c("sample" = "NMFS_DNA_ID"))
+
+chrom1 <- filter(roh_rg_full, chrom == "NC_055957.1")
+ggplot() +
+  geom_segment(data = chrom1, 
+               aes(x = start/(10^6), 
+                   y = newname, 
+                   xend = end/(10^6), 
+                   yend = newname), 
+               colour = "darkblue", 
+               alpha = 1, 
+               size = 3) +
+  theme_bw() +
+  ylab("sample ID") +
+  xlab("Chromosome position (Mbps")
+```
+
